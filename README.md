@@ -148,13 +148,4 @@ Or run it locally. Download the repository and open `index.html` in any modern b
 - There is no real login. *Staff login* simply opens the admin view.
 - Email notifications, the government approval step and the language switch are not included.
 
-## The team
-
-| Name | Matric no. | Role |
-| --- | --- | --- |
-| [Name 1] | [Matric no.] | [Role] |
-| [Name 2] | [Matric no.] | [Role] |
-| [Name 3] | [Matric no.] | [Role] |
-| [Name 4] | [Matric no.] | [Role] |
-
 *Course:* CMT322 Web Engineering & Technologies, School of Computer Sciences, Universiti Sains Malaysia.
