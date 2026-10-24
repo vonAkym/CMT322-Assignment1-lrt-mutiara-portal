@@ -119,7 +119,7 @@ Tickets and updates are kept in the browser's `localStorage`, so changes survive
 
 ## Try it
 
-Open the live site: `https://<your-username>.github.io/CMT322-Assignment1-lrt-mutiara-portal/`
+Open the live site: `https://vonAkym.github.io/CMT322-Assignment1-lrt-mutiara-portal/`
 
 Or run it locally. Download the repository and open `index.html` in any modern browser.
 
