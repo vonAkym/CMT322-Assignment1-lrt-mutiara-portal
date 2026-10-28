@@ -1,0 +1,13 @@
+<section id="report" hidden><h1>Report a concern</h1>
+<div class="row r3"><form class="card stack" id="rf" novalidate>
+<div><label for="rc">Category</label><select id="rc" class="in"><option>Noise</option><option>Dust</option><option>Road damage</option><option>Safety hazard</option><option>Blocked access</option><option>Other</option></select></div>
+<div><label for="rd">Describe the issue</label><textarea id="rd" class="in" rows="4" maxlength="2000" placeholder="What happened and when?"></textarea><p class="err" id="rde" hidden>Please describe the issue (at least 5 characters).</p></div>
+<div><label for="rl">Location</label><input id="rl" class="in" placeholder="Street or landmark"></div>
+<div><label for="rp">Photo (JPG or PNG, up to 5 MB)</label><input id="rp" type="file" accept="image/jpeg,image/png" class="in"><p class="err" id="rpe" hidden></p></div>
+<div><label for="rn">Your name (optional)</label><input id="rn" class="in"></div>
+<label style="font-weight:400"><input type="checkbox" id="ra"> Submit without my name</label>
+<button class="btn" type="submit" style="align-self:flex-start">Submit concern</button></form>
+<div class="stack"><div class="card"><h2>What happens next</h2><p>1. You submit the concern.<br>2. You receive a ticket number.<br>3. The team reviews and replies.<br>4. You track progress with your ticket number.</p></div>
+<div class="ok" id="rok" hidden role="status"><b>Your ticket number</b><div id="rtk" style="font-size:24px;font-weight:600"></div><p>Keep it to track your concern.</p><button class="btn s" type="button" id="rgo" style="margin-top:10px">Track this ticket</button></div></div></div></section>
+<!-- The closing body tag below makes Live Server add its reload script once, here, instead of inside every svg (js/app.js removes it). -->
+</body>

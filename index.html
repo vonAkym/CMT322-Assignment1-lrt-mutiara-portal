@@ -3,146 +3,17 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>LRT Mutiara Line Community Portal</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap">
-<style>
-:root{--bg:#F4F6F5;--sf:#fff;--ink:#14201C;--mut:#3A4A44;--ln:#D5DDD9;--pri:#123E6B;--on:#fff;--hd:#123E6B;--warnbg:#FFF1CC;--warntx:#4A3200;--red:#B3261E;--ok:#14532D;--okbg:#DDF1E4;--onbg:#DCEBFA;--ontx:#0B3A6B;--plbg:#E3E8E5;--mapbg:#E9EEEB;--blk:#D3DCD7;--walk:#8A4B00;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0F1815;--sf:#17231F;--ink:#E8EFEC;--mut:#B7C5BF;--ln:#2E3F39;--pri:#8DB8E8;--on:#0B1E33;--hd:#0B2540;--warnbg:#3A2C08;--warntx:#FFE2A0;--red:#FF8A80;--ok:#8FD6A6;--okbg:#12301F;--onbg:#17304D;--ontx:#BBD8F5;--plbg:#26332E;--mapbg:#16221E;--blk:#23332D;--walk:#F0B060;color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#0F1815;--sf:#17231F;--ink:#E8EFEC;--mut:#B7C5BF;--ln:#2E3F39;--pri:#8DB8E8;--on:#0B1E33;--hd:#0B2540;--warnbg:#3A2C08;--warntx:#FFE2A0;--red:#FF8A80;--ok:#8FD6A6;--okbg:#12301F;--onbg:#17304D;--ontx:#BBD8F5;--plbg:#26332E;--mapbg:#16221E;--blk:#23332D;--walk:#F0B060;color-scheme:dark}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.5 "IBM Plex Sans",Arial,sans-serif}
-.w{max-width:1200px;margin:0 auto;padding:0 20px}
-header{background:var(--hd);color:#fff}header .w{display:flex;align-items:center;gap:8px 20px;flex-wrap:wrap;min-height:64px}
-header b{font-size:18px}nav{display:flex;gap:4px;flex-wrap:wrap}nav button{background:none;border:0;border-bottom:3px solid transparent;color:#CFE0F0;font:500 14px inherit;font-family:inherit;min-height:44px;padding:0 10px;cursor:pointer}
-nav button[aria-current="page"]{color:#fff;border-bottom-color:#E8A317;font-weight:600}.sp{margin-left:auto}
-h1{font-size:26px;margin:22px 0 6px}h2{font-size:17px;margin:0 0 10px}h3{font-size:16px;margin:8px 0 4px}p{margin:0}
-.card{background:var(--sf);border:1px solid var(--ln);border-radius:10px;padding:16px}.mut{color:var(--mut);font-size:14px}
-.pill{font-size:11px;font-weight:600;padding:3px 8px;border-radius:99px;display:inline-block;background:var(--plbg);color:var(--ink)}.pill.on{background:var(--onbg);color:var(--ontx)}.pill.dn{background:var(--okbg);color:var(--ok)}
-.btn{background:var(--pri);color:var(--on);border:0;border-radius:8px;min-height:44px;font:600 14px "IBM Plex Sans",Arial,sans-serif;padding:0 18px;cursor:pointer}.btn.o{background:none;color:#fff;border:1px solid #fff}.btn.s{background:var(--sf);color:var(--pri);border:1px solid var(--pri)}
-label{font-size:13px;font-weight:600;display:block;margin-bottom:6px}.in{width:100%;border:1px solid var(--mut);border-radius:8px;padding:10px;font:400 14px "IBM Plex Sans",Arial,sans-serif;background:var(--sf);color:var(--ink);min-height:44px}
-.row{display:grid;gap:20px;padding:12px 0 28px}.r1{grid-template-columns:280px 1fr}.r2{grid-template-columns:260px 1fr 300px}.r3{grid-template-columns:1.4fr 1fr}.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
-.stack>*+*{margin-top:14px}.urgent{background:var(--warnbg);color:var(--warntx);border-radius:10px;padding:12px 16px;margin-top:18px}
-.ok{background:var(--okbg);color:var(--ok);border-radius:10px;padding:14px}.err{color:var(--red);font-size:13px;margin-top:4px}
-table{width:100%;border-collapse:collapse;font-size:13px}th{text-align:left;background:var(--plbg);padding:10px}td{padding:8px 10px;border-top:1px solid var(--ln);vertical-align:top}td .in{min-height:36px;padding:4px 6px}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px}.stats b{font-size:26px;display:block}
-.bar{display:flex;align-items:center;gap:10px;font-size:13px;margin:6px 0}.bar i{display:block;height:14px;background:var(--pri);border-radius:3px}
-.mk{cursor:pointer}.mk:focus{outline:3px solid var(--pri)}
-.step{display:flex;gap:10px;align-items:center;padding:6px 0}.step i{width:14px;height:14px;border-radius:50%;border:2px solid var(--mut)}.step.d i{background:var(--ok);border-color:var(--ok)}
-[hidden]{display:none!important}
-@media(max-width:860px){.r1,.r2,.r3{grid-template-columns:1fr}.sp{margin-left:0}}
-</style>
+<title>MutiaraInfo</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<header><div class="w"><b>LRT Mutiara Line Community Portal</b>
-<nav aria-label="Main"><button data-v="updates">Updates</button><button data-v="map">Map</button><button data-v="report">Report a concern</button><button data-v="track">Track ticket</button><button data-v="admin" id="navAdmin" hidden>Admin</button></nav>
-<button class="btn o sp" id="login">Staff login</button></div></header>
-<main class="w">
+<header><div class="w"><button class="brand" data-v="home" aria-label="MutiaraInfo, home"><svg width="46" height="46" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="24" fill="#fff"/><rect x="15" y="12" width="18" height="20" rx="4" fill="none" stroke="#143C6B" stroke-width="2.5"/><path d="M15 23H33" stroke="#143C6B" stroke-width="2.5"/><circle cx="20" cy="27.5" r="1.7" fill="#143C6B"/><circle cx="28" cy="27.5" r="1.7" fill="#143C6B"/><path d="M19 36l-3 4M29 36l3 4" stroke="#143C6B" stroke-width="2.5" stroke-linecap="round"/></svg><b>MutiaraInfo</b></button>
+<nav aria-label="Main"><button data-v="updates">Updates</button><button data-v="map">Map</button><button data-v="report">Report</button><button data-v="track">Feedback</button><button data-v="admin" id="navAdmin" hidden>Admin</button></nav>
+<button class="btn o sp" id="login">Sign in</button></div></header>
+<main class="w" id="app"></main>
+<footer><div class="w"><span>© 2026 MutiaraInfo · CMT322 project</span><div class="fl"><button data-v="updates">Updates</button><button data-v="map">Map</button><button data-v="report">Report</button><button data-v="track">Feedback</button></div></div></footer>
 
-<section id="updates"><div class="urgent"><b>Urgent:</b> Sample Road A is closed today. See the detour on the map.</div>
-<h1>Construction updates</h1><p class="mut">Sample data for the course simulation.</p>
-<div class="row r1"><div class="card stack" style="align-self:start"><h2>Filter updates</h2>
-<div><label for="fq">Search</label><input id="fq" class="in" placeholder="Keyword"></div>
-<div><label for="fz">Zone</label><select id="fz" class="in"></select></div>
-<div><label for="fc">Category</label><select id="fc" class="in"></select></div>
-<div><label for="fs">Status</label><select id="fs" class="in"><option value="">All statuses</option><option>Planned</option><option>Ongoing</option><option>Completed</option></select></div>
-<div><label for="sz">Alert me about a zone</label><select id="sz" class="in"></select></div><button class="btn" id="sub">Subscribe</button><p id="subMsg" class="mut" role="status"></p></div>
-<div><div class="cards" id="ulist"></div><p id="uempty" class="mut" hidden>No updates match these filters.</p></div></div></section>
-
-<section id="map" hidden><h1>Construction and disruption map</h1>
-<div class="row r2"><div class="card stack" style="align-self:start"><div><label for="ms">Search street or business</label><input id="ms" class="in" placeholder="e.g. Sample Road A"></div>
-<fieldset style="border:0;padding:0;margin:0"><legend style="font-size:13px;font-weight:600;margin-bottom:6px">Layers</legend>
-<label style="font-weight:400"><input type="checkbox" class="ly" value="closure" checked> Road closures</label><label style="font-weight:400"><input type="checkbox" class="ly" value="walk" checked> Pedestrian routes</label><label style="font-weight:400"><input type="checkbox" class="ly" value="biz" checked> Business access</label></fieldset>
-<div><label for="day">Day <span id="dayv">1</span> of 14 (sample schedule)</label><input id="day" type="range" min="1" max="14" value="1" style="width:100%"></div>
-<p class="mut"><b style="color:var(--red)">Solid red</b> closed road<br><b style="color:var(--walk)">Dashed</b> pedestrian route<br><b>B</b> business access</p></div>
-<div class="card" style="padding:0;overflow:hidden;background:var(--mapbg)"><svg viewBox="0 0 640 460" width="100%" role="group" aria-label="Sample construction map">
-<rect x="30" y="30" width="150" height="110" fill="var(--blk)"/><rect x="250" y="30" width="160" height="110" fill="var(--blk)"/><rect x="480" y="30" width="130" height="110" fill="var(--blk)"/><rect x="30" y="260" width="150" height="160" fill="var(--blk)"/><rect x="480" y="260" width="130" height="160" fill="var(--blk)"/>
-<path d="M0 200H640" stroke="var(--sf)" stroke-width="36"/><path d="M215 0V460" stroke="var(--sf)" stroke-width="30"/>
-<g class="mk" data-l="closure" data-i="0" tabindex="0" role="button" aria-label="Closure: Sample Road A"><path d="M215 215V460" stroke="var(--red)" stroke-width="8"/><circle cx="215" cy="320" r="17" fill="var(--red)"/><text x="215" y="327" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">X</text></g>
-<g class="mk" data-l="closure" data-i="1" tabindex="0" role="button" aria-label="Closure: Sample Road B"><path d="M0 200H190" stroke="var(--red)" stroke-width="8"/><circle cx="100" cy="200" r="17" fill="var(--red)"/><text x="100" y="207" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">X</text></g>
-<g class="mk" data-l="walk" data-i="2" tabindex="0" role="button" aria-label="Pedestrian route: covered walkway"><path d="M235 30V170H450" stroke="var(--walk)" stroke-width="4" stroke-dasharray="9 6" fill="none"/><circle cx="235" cy="100" r="14" fill="var(--walk)"/><text x="235" y="106" text-anchor="middle" font-size="16" font-weight="700" fill="var(--bg)">P</text></g>
-<g class="mk" data-l="biz" data-i="3" tabindex="0" role="button" aria-label="Business access: Sample Shop entrance"><rect x="435" y="225" width="32" height="32" rx="5" fill="var(--ok)"/><text x="451" y="248" text-anchor="middle" font-size="18" font-weight="700" fill="var(--bg)">B</text></g>
-</svg></div>
-<div class="card" style="align-self:start" aria-live="polite"><div id="mdet"><p class="mut">Select a marker on the map to see its details.</p></div></div></div></section>
-
-<section id="report" hidden><h1>Report a concern</h1>
-<div class="row r3"><form class="card stack" id="rf" novalidate>
-<div><label for="rc">Category</label><select id="rc" class="in"><option>Noise</option><option>Dust</option><option>Road damage</option><option>Safety hazard</option><option>Blocked access</option><option>Other</option></select></div>
-<div><label for="rd">Describe the issue</label><textarea id="rd" class="in" rows="4" placeholder="What happened and when?"></textarea><p class="err" id="rde" hidden>Please describe the issue.</p></div>
-<div><label for="rl">Location</label><input id="rl" class="in" placeholder="Street or landmark"></div>
-<div><label for="rp">Photo (JPG or PNG, up to 5 MB)</label><input id="rp" type="file" accept="image/jpeg,image/png" class="in"><p class="err" id="rpe" hidden></p></div>
-<div><label for="rn">Your name (optional)</label><input id="rn" class="in"></div>
-<label style="font-weight:400"><input type="checkbox" id="ra"> Submit without my name</label>
-<button class="btn" type="submit" style="align-self:flex-start">Submit concern</button></form>
-<div class="stack"><div class="card"><h2>What happens next</h2><p>1. You submit the concern.<br>2. You receive a ticket number.<br>3. The team reviews and replies.<br>4. You track progress with your ticket number.</p></div>
-<div class="ok" id="rok" hidden role="status"><b>Your ticket number</b><div id="rtk" style="font-size:24px;font-weight:600"></div><p>Keep it to track your concern.</p><button class="btn s" type="button" id="rgo" style="margin-top:10px">Track this ticket</button></div></div></div></section>
-
-<section id="track" hidden><h1>Track ticket</h1>
-<div class="row r3"><div class="card stack"><div><label for="tq">Ticket number</label><input id="tq" class="in" placeholder="LRT-2026-0001"></div><button class="btn" id="tgo" style="align-self:flex-start">Check status</button><p class="err" id="te" hidden>No ticket found with that number.</p></div>
-<div class="card" id="tres" hidden aria-live="polite"></div></div></section>
-
-<section id="admin" hidden><h1>Operational dashboard</h1>
-<div class="stack" style="padding-bottom:28px"><div class="stats" id="stats"></div>
-<div class="row r3" style="padding:0"><div class="card"><h2>Tickets by category</h2><div id="bars"></div></div>
-<form class="card stack" id="pf"><h2>Post an update</h2><div><label for="pt">Title</label><input id="pt" class="in" required></div>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div><label for="pz">Zone</label><select id="pz" class="in"></select></div><div><label for="pc">Category</label><select id="pc" class="in"></select></div></div>
-<div><label for="ps">Status</label><select id="ps" class="in"><option>Planned</option><option>Ongoing</option><option>Completed</option></select></div>
-<div><label for="px">Details</label><textarea id="px" class="in" rows="2"></textarea></div><button class="btn" type="submit">Publish update</button><p class="mut" id="pm" role="status"></p></form></div>
-<div class="card" style="padding:0;overflow-x:auto"><table><thead><tr><th>Ticket</th><th>Category</th><th>Issue</th><th>Priority</th><th>Status</th><th>Assigned to</th></tr></thead><tbody id="tb"></tbody></table></div></div></section>
-</main>
-
-<script>
-var $=function(s){return document.querySelector(s)},$$=function(s){return[].slice.call(document.querySelectorAll(s))};
-function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
-var ZONES=['George Town','Komtar','Bayan Lepas'],CATS=['Road closure','Schedule','Business access','Progress'],STAT=['Submitted','Under review','In progress','Resolved'],STAFF=['Unassigned','Officer A','Officer B','Construction team'];
-var U=[{t:'Lane closure at Sample Road A',z:'George Town',c:'Road closure',s:'Ongoing',x:'Pedestrians use the covered walkway on the east side. Sample dates: days 1 to 10.'},
-{t:'Piling works notice',z:'Komtar',c:'Schedule',s:'Planned',x:'Noisy works between 9 am and 5 pm. Shop access stays open.'},
-{t:'Pedestrian crossing reopened',z:'George Town',c:'Progress',s:'Completed',x:'Site photo attached. Posted by the construction team.'},
-{t:'Temporary shop entrance',z:'Bayan Lepas',c:'Business access',s:'Ongoing',x:'Use the side street entrance during works. Delivery hours: 7 am to 10 am.'}];
-var T=[{id:'LRT-2026-0001',c:'Blocked access',d:'Shop entrance blocked by barriers.',l:'Sample Road A',p:'High',a:'Officer A',h:[['Submitted','20 Oct 2026'],['In progress','20 Oct 2026']]},
-{id:'LRT-2026-0002',c:'Noise',d:'Loud works after 10 pm.',l:'Komtar',p:'Medium',a:'Unassigned',h:[['Submitted','20 Oct 2026']]}];
-function save(){try{localStorage.setItem('lrtT',JSON.stringify(T));localStorage.setItem('lrtU',JSON.stringify(U))}catch(e){}}
-try{var a=localStorage.getItem('lrtT'),b=localStorage.getItem('lrtU');if(a)T=JSON.parse(a);if(b)U=JSON.parse(b)}catch(e){}
-function st(t){return t.h[t.h.length-1][0]}
-function opts(arr,all){return(all?'<option value="">'+all+'</option>':'')+arr.map(function(x){return'<option>'+x+'</option>'}).join('')}
-$('#fz').innerHTML=opts(ZONES,'All zones');$('#fc').innerHTML=opts(CATS,'All categories');$('#sz').innerHTML=opts(ZONES);$('#pz').innerHTML=opts(ZONES);$('#pc').innerHTML=opts(CATS);
-
-function show(v){$$('main section').forEach(function(s){s.hidden=s.id!==v});$$('nav button').forEach(function(b){if(b.dataset.v===v)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});if(v==='admin')renderAdmin();window.scrollTo(0,0)}
-$$('nav button').forEach(function(b){b.onclick=function(){show(b.dataset.v)}});
-$('#login').onclick=function(){var on=$('#navAdmin').hidden;$('#navAdmin').hidden=!on;this.textContent=on?'Staff log out':'Staff login';show(on?'admin':'updates')};
-
-function renderU(){var q=$('#fq').value.toLowerCase(),z=$('#fz').value,c=$('#fc').value,s=$('#fs').value;
-var L=U.filter(function(u){return(!z||u.z===z)&&(!c||u.c===c)&&(!s||u.s===s)&&(!q||(u.t+u.x).toLowerCase().indexOf(q)>-1)});
-$('#ulist').innerHTML=L.map(function(u){var k=u.s==='Ongoing'?'on':u.s==='Completed'?'dn':'';return'<article class="card"><span class="pill '+k+'">'+esc(u.s)+'</span> <span class="mut">'+esc(u.c)+' · '+esc(u.z)+'</span><h3>'+esc(u.t)+'</h3><p class="mut">'+esc(u.x)+'</p></article>'}).join('');$('#uempty').hidden=L.length>0}
-['#fq','#fz','#fc','#fs'].forEach(function(i){$(i).oninput=renderU});renderU();
-$('#sub').onclick=function(){$('#subMsg').textContent='Subscribed. You will get alerts for '+$('#sz').value+' (simulation only).'};
-
-var M=[{n:'Sample Road A',s:'Closed',f:1,t:10,x:'Detour: use Sample Road C. Pedestrians use the covered walkway.'},{n:'Sample Road B',s:'Partly closed',f:5,t:14,x:'One lane open. Expect delays.'},{n:'Covered walkway',s:'Open',f:1,t:14,x:'Pedestrian route beside the works. Wheelchair accessible.'},{n:'Sample Shop entrance',s:'Open',f:1,t:14,x:'Enter from the side street. Delivery access 7 am to 10 am.'}];
-var sel=0;
-function renderMap(){var d=+$('#day').value,q=$('#ms').value.toLowerCase(),on=$$('.ly').filter(function(x){return x.checked}).map(function(x){return x.value});$('#dayv').textContent=d;
-$$('.mk').forEach(function(g){var m=M[+g.dataset.i];g.style.display=on.indexOf(g.dataset.l)>-1&&d>=m.f&&d<=m.t?'':'none';g.style.opacity=q&&m.n.toLowerCase().indexOf(q)<0?.25:1})}
-function pick(i){sel=i;var m=M[i];$('#mdet').innerHTML='<span class="pill on">'+m.s+'</span><h3>'+esc(m.n)+'</h3><p class="mut">Sample days '+m.f+' to '+m.t+'.<br>'+esc(m.x)+'</p><button class="btn" id="mrep" style="width:100%;margin-top:14px">Report an issue here</button>';$('#mrep').onclick=function(){$('#rl').value=m.n;show('report')}}
-$$('.mk').forEach(function(g){g.onclick=function(){pick(+g.dataset.i)};g.onkeydown=function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();pick(+g.dataset.i)}}});
-$('#day').oninput=renderMap;$('#ms').oninput=renderMap;$$('.ly').forEach(function(x){x.onchange=renderMap});renderMap();
-
-$('#rf').onsubmit=function(e){e.preventDefault();var ok=true,d=$('#rd').value.trim(),f=$('#rp').files[0];
-$('#rde').hidden=!!d;if(!d)ok=false;$('#rpe').hidden=true;
-if(f&&(['image/jpeg','image/png'].indexOf(f.type)<0||f.size>5242880)){$('#rpe').textContent='Photo must be a JPG or PNG up to 5 MB.';$('#rpe').hidden=false;ok=false}
-if(!ok)return;var id='LRT-2026-'+('000'+(T.length+1)).slice(-4);
-T.push({id:id,c:$('#rc').value,d:d,l:$('#rl').value||'Not given',p:'Medium',a:'Unassigned',n:$('#ra').checked?'Anonymous':$('#rn').value,h:[['Submitted',new Date().toLocaleString()]]});save();
-$('#rtk').textContent=id;$('#rok').hidden=false;$('#rf').reset()};
-$('#rgo').onclick=function(){$('#tq').value=$('#rtk').textContent;show('track');lookup()};
-
-function lookup(){var q=$('#tq').value.trim().toUpperCase(),t=T.filter(function(x){return x.id===q})[0];$('#te').hidden=!!t;$('#tres').hidden=!t;if(!t)return;
-var i=STAT.indexOf(st(t));$('#tres').innerHTML='<h2>'+t.id+'</h2><p class="mut">'+esc(t.c)+' · '+esc(t.l)+'<br>Assigned to: '+esc(t.a)+'</p><div style="margin:12px 0">'+STAT.map(function(s,k){return'<div class="step'+(k<=i?' d':'')+'"><i></i><span'+(k===i?' style="font-weight:600"':'')+'>'+s+'</span></div>'}).join('')+'</div><h3>History</h3><p class="mut">'+t.h.map(function(h){return esc(h[0])+' · '+esc(h[1])}).join('<br>')+'</p>'}
-$('#tgo').onclick=lookup;$('#tq').onkeydown=function(e){if(e.key==='Enter')lookup()};
-
-function renderAdmin(){var n=function(s){return T.filter(function(t){return st(t)===s}).length};
-$('#stats').innerHTML=[['Total',T.length],['Submitted',n('Submitted')],['Under review',n('Under review')],['In progress',n('In progress')],['Resolved',n('Resolved')]].map(function(x){return'<div class="card"><span class="mut">'+x[0]+'</span><b>'+x[1]+'</b></div>'}).join('');
-var cc={};T.forEach(function(t){cc[t.c]=(cc[t.c]||0)+1});var mx=Math.max.apply(null,Object.keys(cc).map(function(k){return cc[k]}).concat(1));
-$('#bars').innerHTML=Object.keys(cc).map(function(k){return'<div class="bar"><span style="width:110px">'+esc(k)+'</span><i style="width:'+cc[k]/mx*60+'%"></i>'+cc[k]+'</div>'}).join('');
-$('#tb').innerHTML=T.map(function(t,i){return'<tr><td>'+t.id+'</td><td>'+esc(t.c)+'</td><td>'+esc(t.d)+'<br><span class="mut">'+esc(t.l)+'</span></td><td><select class="in" data-i="'+i+'" data-f="p" aria-label="Priority for '+t.id+'">'+opts(['Low','Medium','High']).replace('>'+t.p+'<',' selected>'+t.p+'<')+'</select></td><td><select class="in" data-i="'+i+'" data-f="s" aria-label="Status for '+t.id+'">'+opts(STAT).replace('>'+st(t)+'<',' selected>'+st(t)+'<')+'</select></td><td><select class="in" data-i="'+i+'" data-f="a" aria-label="Assignee for '+t.id+'">'+opts(STAFF).replace('>'+t.a+'<',' selected>'+t.a+'<')+'</select></td></tr>'}).join('')}
-$('#tb').onchange=function(e){var s=e.target,t=T[+s.dataset.i];if(!t)return;if(s.dataset.f==='s')t.h.push([s.value,new Date().toLocaleString()]);else t[s.dataset.f]=s.value;save();renderAdmin()};
-$('#pf').onsubmit=function(e){e.preventDefault();var t=$('#pt').value.trim();if(!t){$('#pm').textContent='Please add a title.';return}
-U.unshift({t:t,z:$('#pz').value,c:$('#pc').value,s:$('#ps').value,x:$('#px').value});save();renderU();$('#pf').reset();$('#pm').textContent='Published. It now shows on the Updates page.'};
-</script>
+<script type="module" src="js/app.js"></script>
 </body>
 </html>
