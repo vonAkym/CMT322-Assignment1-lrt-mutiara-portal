@@ -1,0 +1,10 @@
+<section id="admin" hidden><h1>Operational dashboard</h1>
+<div class="stack" style="padding-bottom:28px"><div class="stats" id="stats"></div>
+<div class="row r3" style="padding:0"><div class="card"><h2>Tickets by category</h2><div id="bars"></div></div>
+<form class="card stack" id="pf"><h2>Post an update</h2><div><label for="pt">Title</label><input id="pt" class="in" required></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div><label for="pz">Zone</label><select id="pz" class="in" data-zones></select></div><div><label for="pc">Category</label><select id="pc" class="in"></select></div></div>
+<div><label for="ps">Status</label><select id="ps" class="in"><option>Planned</option><option>Ongoing</option><option>Completed</option></select></div>
+<div><label for="px">Details</label><textarea id="px" class="in" rows="2"></textarea></div><button class="btn" type="submit">Publish update</button><p class="mut" id="pm" role="status"></p></form></div>
+<div class="card" style="padding:0;overflow-x:auto"><table><thead><tr><th>Ticket</th><th>Category</th><th>Issue</th><th>Priority</th><th>Status</th><th>Assigned to</th></tr></thead><tbody id="tb"></tbody></table></div></div></section>
+<!-- The closing body tag below makes Live Server add its reload script once, here, instead of inside every svg (js/app.js removes it). -->
+</body>

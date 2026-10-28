@@ -1,0 +1,11 @@
+<section id="updates" hidden><div class="urgent"><b>Urgent:</b> Sample Road A is closed today. See the detour on the map.</div>
+<h1>Construction updates</h1><p class="mut">Latest notices from the project teams.</p>
+<div class="row r1"><div class="card stack" style="align-self:start"><h2>Filter updates</h2>
+<div><label for="fq">Search</label><input id="fq" class="in" placeholder="Keyword"></div>
+<div><label for="fz">Zone</label><select id="fz" class="in" data-zones="All zones"></select></div>
+<div><label for="fc">Category</label><select id="fc" class="in"></select></div>
+<div><label for="fs">Status</label><select id="fs" class="in"><option value="">All statuses</option><option>Planned</option><option>Ongoing</option><option>Completed</option></select></div>
+<div><label for="sz">Alert me about a zone</label><select id="sz" class="in" data-zones></select></div><button class="btn" id="sub">Subscribe</button><p id="subMsg" class="mut" role="status"></p></div>
+<div><div class="cards" id="ulist"></div><p id="uempty" class="mut" hidden>No updates match these filters.</p></div></div></section>
+<!-- The closing body tag below makes Live Server add its reload script once, here, instead of inside every svg (js/app.js removes it). -->
+</body>

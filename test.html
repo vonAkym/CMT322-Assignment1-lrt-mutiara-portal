@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Supabase connection test</title>
+<style>body{font:16px/1.5 system-ui,sans-serif;max-width:640px;margin:40px auto;padding:0 20px}pre{background:#eef2f0;padding:12px;border-radius:8px;overflow:auto}.ok{color:#14532D}.bad{color:#B3261E}</style></head>
+<body><h1>Supabase connection test</h1><p id="s">Checking…</p><pre id="o"></pre>
+<script type="module">
+import { listZones, listUpdates, trackTicket } from './js/api.js';
+const s = document.getElementById('s'), o = document.getElementById('o');
+try {
+  const zones = await listZones(), updates = await listUpdates();
+  s.textContent = `Connected. ${zones.length} zones and ${updates.length} published updates found.`; s.className = 'ok';
+  o.textContent = JSON.stringify({ zones, firstUpdate: updates[0] }, null, 2);
+  console.log('track_ticket works:', await trackTicket('LRT-0000-0000'));
+} catch (e) {
+  s.textContent = 'Not connected: ' + e.message; s.className = 'bad';
+  o.textContent = 'Check js/config.js (URL and key), that both SQL files were run, and that the project is not paused.';
+}
+</script></body></html>

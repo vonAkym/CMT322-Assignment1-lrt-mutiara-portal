@@ -1,0 +1,14 @@
+<section id="map" hidden><h1>Construction and disruption map</h1><p class="mut">Schematic map of the LRT Mutiara Line, not to scale. Station names, roads and dates are samples.</p>
+<div class="row r2"><div class="card stack" style="align-self:start"><form id="msf"><label for="ms">Search station, street or business</label><input id="ms" class="in" list="mlist" placeholder="e.g. Komtar" autocomplete="off"><datalist id="mlist"></datalist></form>
+<fieldset style="border:0;padding:0;margin:0"><legend style="font-size:13px;font-weight:600;margin-bottom:8px">Legend and layers</legend>
+<label class="lg"><input type="checkbox" class="ly" value="stn" checked><svg width="26" height="18" aria-hidden="true"><path d="M0 9H26" stroke="var(--pri)" stroke-width="6"/><circle cx="13" cy="9" r="6" fill="var(--sf)" stroke="var(--pri)" stroke-width="3"/></svg>LRT line and stations</label>
+<label class="lg"><input type="checkbox" class="ly" value="closure" checked><svg width="26" height="18" aria-hidden="true"><path d="M0 9H26" stroke="var(--red)" stroke-width="6"/></svg>Road closures</label>
+<label class="lg"><input type="checkbox" class="ly" value="walk" checked><svg width="26" height="18" aria-hidden="true"><path d="M0 9H26" stroke="var(--walk)" stroke-width="4" stroke-dasharray="6 4"/></svg>Pedestrian routes</label>
+<label class="lg"><input type="checkbox" class="ly" value="detour" checked><svg width="26" height="18" aria-hidden="true"><path d="M0 9H26" stroke="var(--ok)" stroke-width="4" stroke-dasharray="2 4" stroke-linecap="round"/></svg>Detour routes</label>
+<label class="lg"><input type="checkbox" class="ly" value="biz" checked><svg width="26" height="18" aria-hidden="true"><rect x="4" y="1" width="16" height="16" rx="3" fill="var(--ok)"/></svg>Business access</label></fieldset>
+<div><label for="day">Day <span id="dayv">1</span> of 14 (sample schedule)</label><input id="day" type="range" min="1" max="14" value="1" style="width:100%"></div></div>
+<div class="card" style="padding:0;overflow:hidden;position:relative;background:var(--mapbg)"><div class="zc"><button type="button" id="zi" aria-label="Zoom in">+</button><button type="button" id="zo" aria-label="Zoom out">&minus;</button><button type="button" id="zr" aria-label="Reset view" style="font-size:14px">Reset</button></div>
+<svg id="msvg" viewBox="0 0 900 520" width="100%" style="display:block;touch-action:none;cursor:grab" role="group" aria-label="Map of the LRT Mutiara Line with construction and disruption markers"><g id="mg"></g></svg></div>
+<div class="card" style="align-self:start" aria-live="polite"><div id="mdet"><p class="mut">Select a station or marker on the map to see its details. Drag to move the map and use the buttons or mouse wheel to zoom.</p></div></div></div></section>
+<!-- The closing body tag below makes Live Server add its reload script once, here, instead of inside every svg (js/app.js removes it). -->
+</body>
