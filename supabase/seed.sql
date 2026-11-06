@@ -2,11 +2,7 @@
 insert into public.zones (name) values ('George Town'), ('Komtar'), ('Bayan Lepas')
 on conflict (name) do nothing;
 
-insert into public.updates (title, body, zone_id, category, status, is_urgent, approved) values
- ('Lane closure at Sample Road A', 'Pedestrians use the covered walkway on the east side.', (select id from public.zones where name='George Town'), 'Road closure', 'Ongoing', true, true),
- ('Piling works notice', 'Noisy works between 9 am and 5 pm. Shop access stays open.', (select id from public.zones where name='Komtar'), 'Schedule', 'Planned', false, true),
- ('Pedestrian crossing reopened', 'Posted by the construction team.', (select id from public.zones where name='George Town'), 'Progress', 'Completed', false, true),
- ('Temporary shop entrance', 'Use the side street entrance. Delivery hours: 7 am to 10 am.', (select id from public.zones where name='Bayan Lepas'), 'Business access', 'Ongoing', false, true);
+-- Sample advisories are in seed_advisories.sql (run it after the advisories migration).
 
 insert into public.map_features (kind, name, status, detail, lat, lng, starts_on, ends_on) values
  ('station','Bayan Lepas','Station','Sample station at the southern end.',5.2950,100.2600,null,null),

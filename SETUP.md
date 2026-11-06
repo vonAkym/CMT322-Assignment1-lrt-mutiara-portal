@@ -31,14 +31,24 @@ Free projects pause after about 7 days with no activity. Open the project or the
 
 1. Open **SQL Editor, New query**.
 2. Paste all of `supabase/migrations/20261028000000_init.sql` and click **Run**.
-3. New query again. Paste `supabase/seed.sql` and click **Run**.
-4. Open **Table Editor**. You should see zones, updates, map_features, tickets and the others.
+3. New query again. Paste `supabase/migrations/20261108000000_advisories.sql` (Module 1 advisories) and click **Run**.
+4. New query again. Paste `supabase/seed.sql` and click **Run**.
+5. New query again. Paste `supabase/seed_advisories.sql` and click **Run**. You can run this one again any time to reset the sample advisories.
+6. Open **Table Editor**. You should see zones, updates, map_features, tickets and the others.
+
+**Already set up before the advisories migration?** Run only steps 3 and 5.
+
+### Trying staff features before sign-in exists (optional)
+
+Posting, editing and ending advisories (UC06 to UC08) need a signed-in staff account. Until sign-in is built, run
+`supabase/dev/demo_without_signin.sql` to let the site save without signing in. While it is on, **anyone** with the site
+can change advisories, so turn it off with `supabase/dev/undo_demo_without_signin.sql` once sign-in works or the demo is over.
 
 ## 4. Connect the front end
 
 1. In the `js` folder, make a copy of `config.example.js` and name it `config.js`. Paste your Project URL and anon key into it.
 2. In VS Code, right-click `test.html` and choose **Open with Live Server**.
-3. The page should say "Connected. 3 zones and 4 published updates found." If not, press F12 and read the Console.
+3. The page should say "Connected. 3 zones and 7 published advisories found." If not, press F12 and read the Console.
 
 Opening files by double-click will not work, because `js/api.js` is an ES module. Always use Live Server.
 
@@ -60,14 +70,15 @@ The current `index.html` keeps sample data in the browser. Swap each part for a 
 
 | Page | Replace this | With this |
 | --- | --- | --- |
-| Updates and home search | the `U` array | `listUpdates({zoneId, category, status, q})` |
+| Advisories and home search | the `U` array | `listAdvisories({zoneId, category, status, severity, onDate, q})`, `getAdvisory(id)`, `hubSummary()`, `listUrgent()`, `listSchedule()` |
 | Zones dropdowns | the `ZONES` array | `listZones()` |
 | Zone alerts | the confirmation message | `subscribeToZone(zoneId, email)` |
 | Map | the `M` array | `listMapFeatures()` |
 | Report form | pushing to `T` | `submitTicket({...})`, show the returned number |
 | Feedback (track) | looking up `T` | `trackTicket(number)` |
 | Sign in | the fake button | `signIn()`, `myProfile()` |
-| Admin | the `T` and `U` arrays | `listTickets()`, `updateTicket()`, `postUpdate()`, `approveUpdate()` |
+| Admin | the `T` array | `listTickets()`, `updateTicket()` |
+| My advisories (staff) | | `listMyAdvisories()`, `saveAdvisory()`, `publishAdvisory()`, `endAdvisory()`, `uploadAdvisoryPhoto()` |
 
 Load the script with `<script type="module">` and `import { ... } from './js/api.js'`.
 
