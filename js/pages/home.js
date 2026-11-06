@@ -10,7 +10,7 @@ const TILES = {
   closures: { category: 'Road closure', status: 'Ongoing' },
   active: { status: 'Ongoing' },
   urgent: { urgent: true },
-  thisWeek: {},
+  thisWeek: null, // opens the works schedule instead
 };
 
 async function load() {
@@ -26,7 +26,10 @@ async function load() {
 
 export function init() {
   $$('.hc').forEach((b) => { b.onclick = () => show(b.dataset.go); });
-  $$('[data-tile]').forEach((b) => { b.onclick = () => { applyFilters(TILES[b.dataset.tile]); show('updates'); }; });
+  $$('[data-tile]').forEach((b) => {
+    const f = TILES[b.dataset.tile];
+    b.onclick = () => { if (f) { applyFilters(f); show('updates'); } else show('schedule'); };
+  });
   $('#hall').onclick = () => { applyFilters(); show('updates'); };
   $('#hs').onsubmit = (e) => { e.preventDefault(); search($('#hq').value, $('#hz').value); show('updates'); };
   onShow('home', load); // fresh numbers every time the home page opens

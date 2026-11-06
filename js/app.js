@@ -11,8 +11,9 @@ import * as report from './pages/report.js';
 import * as track from './pages/track.js';
 import * as admin from './pages/admin.js';
 import * as advisory from './pages/advisory.js';
+import * as schedule from './pages/schedule.js';
 
-var PAGES={home:home,updates:updates,advisory:advisory,map:map,report:report,track:track,admin:admin};
+var PAGES={home:home,updates:updates,advisory:advisory,schedule:schedule,map:map,report:report,track:track,admin:admin};
 
 async function loadPages(){var names=Object.keys(PAGES);
 var html=await Promise.all(names.map(function(n){return fetch('pages/'+n+'.html').then(function(r){if(!r.ok)throw new Error('Could not load pages/'+n+'.html');return r.text()})}));

@@ -176,3 +176,44 @@ table{width:100%;border-collapse:collapse;font-size:13px}th{text-align:left;back
   .sec-h h2, .h2b { font-size: 24px; }
 }
 @media (prefers-reduced-motion: reduce) { .hstat { transition: none; } .hstat:hover { transform: none; } }
+
+/* ===== Module 1: works schedule (UC04) ===== */
+.sch-top { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; margin: 16px 0; }
+.sch-top .in { width: 240px; }
+.sch-key { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 13px; }
+.sch-sw { display: inline-block; width: 22px; height: 10px; margin-left: 10px; border-radius: 5px; background: var(--c1b); border: 1px solid var(--pri); }
+.sch-sw.on { margin-left: 0; background: var(--pri); }
+.sch-group { padding: 0; overflow: hidden; }
+.sch-row { display: grid; grid-template-columns: minmax(240px, 1fr) 1.6fr; gap: 20px; align-items: center; padding: 14px 18px; }
+.sch-head { background: var(--plbg); padding-top: 12px; padding-bottom: 12px; }
+.sch-head h2 { margin: 0; }
+.sch-list { list-style: none; margin: 0; padding: 0; }
+.sch-list .sch-row { border-top: 1px solid var(--ln); }
+.sch-info p { margin: 0; font-size: 13px; }
+.sch-info h3 { margin: 6px 0 4px; font-size: 16px; }
+.sch-title { padding: 0; background: none; border: 0; color: var(--pri); font: inherit; font-weight: 600; text-align: left; cursor: pointer; }
+.sch-title:hover { text-decoration: underline; }
+.sch-scale { position: relative; height: 18px; font-size: 12px; color: var(--mut); }
+.sch-scale span { position: absolute; top: 0; white-space: nowrap; }
+.sch-track {
+  position: relative;
+  height: 16px;
+  border-radius: 8px;
+  background-color: var(--plbg);
+  /* a faint line at the start of each week */
+  background-image: linear-gradient(to right, var(--ln) 1px, transparent 1px);
+  background-size: 25% 100%;
+}
+.sch-fill { position: absolute; top: 0; bottom: 0; border-radius: 8px; background: var(--c1b); border: 1px solid var(--pri); }
+.sch-fill.on { background: var(--pri); }
+.sch-fill.open { /* carries on past the four weeks: fade out at the right */
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  -webkit-mask-image: linear-gradient(to right, #000 85%, transparent);
+  mask-image: linear-gradient(to right, #000 85%, transparent);
+}
+.sch-later { position: absolute; right: 8px; top: -1px; font-size: 12px; color: var(--mut); }
+@media (max-width: 860px) {
+  .sch-row { grid-template-columns: 1fr; gap: 10px; }
+  .sch-head .sch-scale { display: none; }
+}
