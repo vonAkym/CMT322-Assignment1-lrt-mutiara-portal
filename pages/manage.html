@@ -1,0 +1,35 @@
+<section id="manage" hidden>
+<div class="mh"><div><h1>My advisories</h1><p class="mut">Post, edit, publish and end construction advisories.</p></div><button type="button" class="btn" id="mnew">+ New advisory</button></div>
+<p class="note" id="mdemo" hidden><b>Demo mode.</b> Staff sign-in is not connected yet, so this page lists every advisory. Saving works only after <code>supabase/dev/demo_without_signin.sql</code> has been run in Supabase (see SETUP.md).</p>
+
+<form class="card stack" id="mform" hidden novalidate aria-labelledby="mftitle">
+<h2 id="mftitle">New advisory</h2>
+<div><label for="mt">Title</label><input id="mt" class="in" maxlength="150" placeholder="e.g. Lane closure on Sample Road B" aria-describedby="mte"><p class="err" id="mte" hidden>Enter a title of 3 to 150 characters.</p></div>
+<div class="fgrid">
+<div><label for="mc">Type</label><select id="mc" class="in"></select></div>
+<div><label for="mz">Area</label><select id="mz" class="in" data-zones="All areas"></select></div>
+<div><label for="ml">Location</label><input id="ml" class="in" placeholder="Street or landmark"></div>
+<div><label for="ms1">Start date</label><input id="ms1" class="in" type="date" aria-describedby="mse"><p class="err" id="mse" hidden>Choose the start date.</p></div>
+<div><label for="me1">End date (optional)</label><input id="me1" class="in" type="date" aria-describedby="mde"><p class="err" id="mde" hidden>The end date must be on or after the start date.</p></div>
+<div><label for="mh">Work hours</label><input id="mh" class="in" placeholder="e.g. 9 am to 5 pm, Monday to Saturday"></div>
+<div><label for="mv">Severity</label><select id="mv" class="in" aria-describedby="mvh"><option>Low</option><option>Medium</option><option>High</option></select><p class="mut hint" id="mvh">High shows it in the urgent banner on every page.</p></div>
+<div><label for="mst">Work status</label><select id="mst" class="in"><option>Planned</option><option>Ongoing</option><option>Completed</option></select></div>
+</div>
+<div><label for="mb">Details</label><textarea id="mb" class="in" rows="4" placeholder="What is happening, and what should people expect?"></textarea></div>
+<div class="fgrid2">
+<div><label for="md">Detour and access</label><textarea id="md" class="in" rows="3" placeholder="Detour route, pedestrian access, parking"></textarea></div>
+<div><label for="mbz">Affected businesses</label><textarea id="mbz" class="in" rows="3" placeholder="Shops affected and how customers reach them"></textarea></div>
+</div>
+<div><label for="mp">Site photos (JPG or PNG, up to 5 MB each, at most 5)</label><div class="thumbs" id="mthumbs"></div><input id="mp" class="in" type="file" accept="image/jpeg,image/png" multiple><p class="err" id="mpe" hidden></p></div>
+<div class="mactions"><button class="btn s" type="submit" value="Draft" id="mdraft">Save as draft</button><button class="btn" type="submit" value="Published" id="mpub">Publish</button><button class="btn s" type="button" id="mcancel">Cancel</button></div>
+<p class="err" id="mfe" role="alert" hidden></p>
+</form>
+
+<div class="tabs" id="mtabs" role="group" aria-label="Show advisories by state"><button type="button" data-state="Draft">Drafts <span>0</span></button><button type="button" data-state="Published">Published <span>0</span></button><button type="button" data-state="Ended">Ended <span>0</span></button></div>
+<p class="ok" id="mok" role="status" hidden></p><p class="err" id="merr" role="alert" hidden></p>
+<div class="card" style="padding:0;overflow-x:auto"><table><thead><tr><th>Advisory</th><th>Type</th><th>Area</th><th>Dates</th><th>Updated</th><th><span class="vh">Actions</span></th></tr></thead><tbody id="mtb"></tbody></table>
+<p class="mut" id="mempty" style="padding:16px" hidden>No advisories here yet.</p></div>
+<div style="height:28px"></div>
+</section>
+<!-- The closing body tag below makes Live Server add its reload script once, here, instead of inside every svg (js/app.js removes it). -->
+</body>

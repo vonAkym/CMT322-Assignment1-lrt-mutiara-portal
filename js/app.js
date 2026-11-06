@@ -12,8 +12,9 @@ import * as track from './pages/track.js';
 import * as admin from './pages/admin.js';
 import * as advisory from './pages/advisory.js';
 import * as schedule from './pages/schedule.js';
+import * as manage from './pages/manage.js';
 
-var PAGES={home:home,updates:updates,advisory:advisory,schedule:schedule,map:map,report:report,track:track,admin:admin};
+var PAGES={home:home,updates:updates,advisory:advisory,schedule:schedule,manage:manage,map:map,report:report,track:track,admin:admin};
 
 async function loadPages(){var names=Object.keys(PAGES);
 var html=await Promise.all(names.map(function(n){return fetch('pages/'+n+'.html').then(function(r){if(!r.ok)throw new Error('Could not load pages/'+n+'.html');return r.text()})}));
@@ -30,7 +31,8 @@ catch(e){console.error(e);$('#app').innerHTML='<p class="err" style="padding:40p
 if($('#home')){
 Object.keys(PAGES).forEach(function(n){PAGES[n].init()});
 $$('nav button,.brand,.fl button').forEach(function(b){b.onclick=function(){show(b.dataset.v)}});
-$('#login').onclick=function(){var on=$('#navAdmin').hidden;$('#navAdmin').hidden=!on;this.textContent=on?'Sign out':'Sign in';show(on?'admin':'home')};
+// Simulated sign-in: shows or hides the staff links (every element with data-staff).
+$('#login').onclick=function(){var on=$('#navAdmin').hidden;$$('[data-staff]').forEach(function(b){b.hidden=!on});this.textContent=on?'Sign out':'Sign in';show(on?'admin':'home')};
 show('home');
 loadZones();
 loadUrgentBanner()}

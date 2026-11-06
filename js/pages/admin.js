@@ -1,6 +1,6 @@
 // Admin page: still uses sample tickets until staff sign-in is connected.
-import { $, esc, opts, CATS, STAT } from '../util.js';
-import { onShow } from '../router.js';
+import { $, esc, opts, STAT } from '../util.js';
+import { show, onShow } from '../router.js';
 
 var STAFF=['Unassigned','Officer A','Officer B','Construction team'];
 var T=[{id:'LRT-2026-0001',c:'Blocked access',d:'Shop entrance blocked by barriers.',l:'Sample Road A',p:'High',a:'Officer A',h:[['Submitted','20 Oct 2026'],['In progress','20 Oct 2026']]},
@@ -16,9 +16,7 @@ $('#bars').innerHTML=Object.keys(cc).map(function(k){return'<div class="bar"><sp
 $('#tb').innerHTML=T.map(function(t,i){return'<tr><td>'+t.id+'</td><td>'+esc(t.c)+'</td><td>'+esc(t.d)+'<br><span class="mut">'+esc(t.l)+'</span></td><td><select class="in" data-i="'+i+'" data-f="p" aria-label="Priority for '+t.id+'">'+opts(['Low','Medium','High']).replace('>'+t.p+'<',' selected>'+t.p+'<')+'</select></td><td><select class="in" data-i="'+i+'" data-f="s" aria-label="Status for '+t.id+'">'+opts(STAT).replace('>'+st(t)+'<',' selected>'+st(t)+'<')+'</select></td><td><select class="in" data-i="'+i+'" data-f="a" aria-label="Assignee for '+t.id+'">'+opts(STAFF).replace('>'+t.a+'<',' selected>'+t.a+'<')+'</select></td></tr>'}).join('')}
 
 export function init(){
-$('#pc').innerHTML=opts(CATS);
 $('#tb').onchange=function(e){var s=e.target,t=T[+s.dataset.i];if(!t)return;if(s.dataset.f==='s')t.h.push([s.value,new Date().toLocaleString()]);else t[s.dataset.f]=s.value;save();renderAdmin()};
-// Publishing needs staff sign-in (postUpdate), which is the admin module's job.
-$('#pf').onsubmit=function(e){e.preventDefault();var t=$('#pt').value.trim();if(!t){$('#pm').textContent='Please add a title.';return}
-$('#pm').textContent='Not saved yet: publishing will work once staff sign-in is connected.'};
+// Posting advisories moved to Module 1's My advisories page.
+$('#agoManage').onclick=function(){show('manage')};
 onShow('admin',renderAdmin)}

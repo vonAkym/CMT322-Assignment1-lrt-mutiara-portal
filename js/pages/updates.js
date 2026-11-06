@@ -1,6 +1,7 @@
 // Advisories page (UC03): search and filter the published advisories, or browse the ended archive.
 import { listAdvisories } from '../api.js';
 import { $, opts, CATS } from '../util.js';
+import { show, onShow } from '../router.js';
 import { card } from './advisory.js';
 
 const FIELDS = { q: '#fq', zoneId: '#fz', category: '#fc', status: '#fs', onDate: '#fd' };
@@ -31,11 +32,11 @@ async function renderU() {
   $('#uempty').hidden = list.length > 0;
 }
 
-// Used by the home page: set some filters (the rest are cleared) and show the results.
+// Used by the home page and the urgent banner: set some filters (the rest are cleared) and open this page.
 export function applyFilters(f = {}) {
   Object.entries(FIELDS).forEach(([k, sel]) => { $(sel).value = f[k] || ''; });
   $('#fu').checked = !!f.urgent;
-  renderU();
+  show('updates');
 }
 export const search = (q, zoneId) => applyFilters({ q, zoneId });
 
@@ -44,9 +45,9 @@ export function init() {
   $('#fq').oninput = () => { clearTimeout(typing); typing = setTimeout(renderU, 300); };
   ['#fz', '#fc', '#fs', '#fd', '#fu'].forEach((s) => { $(s).onchange = renderU; });
   $('#fclr').onclick = () => applyFilters();
+  onShow('updates', renderU); // fresh list every time the page opens, e.g. after staff publish an advisory
   $('#sub').onclick = () => {
     const o = $('#sz').selectedOptions[0];
     $('#subMsg').textContent = `Subscribed. You will get alerts for ${o ? o.text : 'this area'} (simulation only).`;
   };
-  renderU();
 }

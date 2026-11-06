@@ -28,9 +28,9 @@ export function init() {
   $$('.hc').forEach((b) => { b.onclick = () => show(b.dataset.go); });
   $$('[data-tile]').forEach((b) => {
     const f = TILES[b.dataset.tile];
-    b.onclick = () => { if (f) { applyFilters(f); show('updates'); } else show('schedule'); };
+    b.onclick = () => { if (f) applyFilters(f); else show('schedule'); };
   });
-  $('#hall').onclick = () => { applyFilters(); show('updates'); };
-  $('#hs').onsubmit = (e) => { e.preventDefault(); search($('#hq').value, $('#hz').value); show('updates'); };
+  $('#hall').onclick = () => applyFilters();
+  $('#hs').onsubmit = (e) => { e.preventDefault(); search($('#hq').value, $('#hz').value); };
   onShow('home', load); // fresh numbers every time the home page opens
 }

@@ -2,7 +2,6 @@
 // Hiding it lasts for this browser tab, until the urgent advisories change.
 import { listUrgent } from './api.js';
 import { $, esc, dateRange } from './util.js';
-import { show } from './router.js';
 import { applyFilters } from './pages/updates.js';
 
 export async function loadUrgentBanner() {
@@ -18,7 +17,7 @@ export async function loadUrgentBanner() {
     (more ? ` or <button type="button" class="ubar-link" id="ubarAll">view ${more} more urgent alert${more > 1 ? 's' : ''}</button>` : '');
   $('#ubar').hidden = false;
 
-  if (more) $('#ubarAll').onclick = () => { applyFilters({ urgent: true }); show('updates'); };
+  if (more) $('#ubarAll').onclick = () => applyFilters({ urgent: true });
   $('#ubarX').onclick = () => {
     $('#ubar').hidden = true;
     try { sessionStorage.setItem('urgentHidden', key); } catch (e) { /* private mode: just hide */ }
