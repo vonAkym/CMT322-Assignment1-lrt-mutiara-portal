@@ -6,6 +6,7 @@ the roads and dates in the sample data are not official project information.
 
 | File | Original | Author | Licence |
 | --- | --- | --- | --- |
+| `hero.jpg` (home page banner) | [George Town, Penang city centre](https://commons.wikimedia.org/wiki/File:George_Town,_Penang_city_centre.jpg) | HundenvonPenang | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) |
 | `advisory-barriers.jpg` | [Mutiara LRT line elevated viaduct piers under construction at Penang Waterfront (260823) 01](https://commons.wikimedia.org/wiki/File:Mutiara_LRT_line_elevated_viaduct_piers_under_construction_at_Penang_Waterfront_(260823)_01.jpg) | \*angys\* | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) |
 | `advisory-komtar-detour.jpg` | [Komtar LRT station construction site with drilling rig along Jalan Magazine (260823) 01](https://commons.wikimedia.org/wiki/File:Komtar_LRT_station_construction_site_with_drilling_rig_along_Jalan_Magazine_(260823)_01.jpg) | \*angys\* | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) |
 | `advisory-piling.jpg` | [Bore piling rig at Macallum LRT station site (260823)](https://commons.wikimedia.org/wiki/File:Bore_piling_rig_at_Macallum_LRT_station_site_(260823).jpg) | \*angys\* | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) |

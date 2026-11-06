@@ -3,6 +3,7 @@
 import { listZones } from './api.js';
 import { $, $$, zopts } from './util.js';
 import { show } from './router.js';
+import { loadUrgentBanner } from './banner.js';
 import * as home from './pages/home.js';
 import * as updates from './pages/updates.js';
 import * as map from './pages/map.js';
@@ -30,4 +31,5 @@ Object.keys(PAGES).forEach(function(n){PAGES[n].init()});
 $$('nav button,.brand,.fl button').forEach(function(b){b.onclick=function(){show(b.dataset.v)}});
 $('#login').onclick=function(){var on=$('#navAdmin').hidden;$('#navAdmin').hidden=!on;this.textContent=on?'Sign out':'Sign in';show(on?'admin':'home')};
 show('home');
-loadZones()}
+loadZones();
+loadUrgentBanner()}
