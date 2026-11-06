@@ -1,11 +1,15 @@
 <section id="updates" hidden><div class="urgent"><b>Urgent:</b> Sample Road A is closed today. See the detour on the map.</div>
-<h1>Construction updates</h1><p class="mut">Latest notices from the project teams.</p>
-<div class="row r1"><div class="card stack" style="align-self:start"><h2>Filter updates</h2>
-<div><label for="fq">Search</label><input id="fq" class="in" placeholder="Keyword"></div>
-<div><label for="fz">Zone</label><select id="fz" class="in" data-zones="All zones"></select></div>
-<div><label for="fc">Category</label><select id="fc" class="in"></select></div>
-<div><label for="fs">Status</label><select id="fs" class="in"><option value="">All statuses</option><option>Planned</option><option>Ongoing</option><option>Completed</option></select></div>
-<div><label for="sz">Alert me about a zone</label><select id="sz" class="in" data-zones></select></div><button class="btn" id="sub">Subscribe</button><p id="subMsg" class="mut" role="status"></p></div>
-<div><div class="cards" id="ulist"></div><p id="uempty" class="mut" hidden>No updates match these filters.</p></div></div></section>
+<h1>Construction advisories</h1><p class="mut">Road closures, works schedules, business access and progress from the project teams.</p>
+<div class="row r1"><div class="card stack" style="align-self:start"><h2>Filter advisories</h2>
+<div><label for="fq">Search</label><input id="fq" class="in" type="search" placeholder="Road, place or keyword"></div>
+<div><label for="fz">Area</label><select id="fz" class="in" data-zones="All areas"></select></div>
+<div><label for="fc">Type</label><select id="fc" class="in"></select></div>
+<div><label for="fs">Status</label><select id="fs" class="in"><option value="">All current</option><option>Planned</option><option>Ongoing</option><option value="ended">Ended (archive)</option></select></div>
+<div><label for="fd">Works on this date</label><input id="fd" class="in" type="date"></div>
+<label class="chk"><input type="checkbox" id="fu"> Urgent only</label>
+<button type="button" class="btn s" id="fclr">Clear filters</button>
+<hr class="sep">
+<div><label for="sz">Alert me about an area</label><select id="sz" class="in" data-zones></select></div><button class="btn" id="sub">Subscribe</button><p id="subMsg" class="mut" role="status"></p></div>
+<div><p class="mut" id="ucount" role="status"></p><div class="acards" id="ulist"></div><p id="uempty" class="mut" hidden>No advisories match these filters.</p></div></div></section>
 <!-- The closing body tag below makes Live Server add its reload script once, here, instead of inside every svg (js/app.js removes it). -->
 </body>
