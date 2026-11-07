@@ -96,20 +96,25 @@ stateDiagram-v2
 
 ## How it is built
 
-The portal is a single-page app written in plain HTML, CSS and JavaScript, with no framework and no build step. `index.html` is the shell (header, footer and an empty `<main>`). Each page lives in its own file under `pages/` with its own script under `js/pages/`, and `js/app.js` loads them all into the shell.
+The portal is a single-page app built with **React** and **Vite**, with **Supabase** (Postgres) as the database. The code is split into one folder per module, so each team member works in their own folder. Every page has its own address (for example `#/advisories/12`), so links can be shared and the browser's back button works.
 
 ```mermaid
 flowchart TB
-    subgraph Browser
-      UI["Pages: Home, Updates, Map, Report, Feedback, Admin"]
-      JS["JavaScript: filters, form checks,<br/>ticket logic, dashboard"]
-      LS[("localStorage<br/>sample data and tickets")]
+    subgraph Browser["Browser: React app"]
+      M1["Module 1: advisories<br/>home, advisories, schedule, My advisories"]
+      M2["Module 2: map"]
+      M3["Module 3: complaints<br/>report, feedback"]
+      M4["Module 4: admin<br/>sign-in, dashboard"]
     end
-    UI <--> JS
-    JS <--> LS
+    subgraph Supabase
+      DB[("Postgres<br/>tables, RLS rules, functions")]
+      ST["Storage<br/>photos"]
+    end
+    M1 & M2 & M3 & M4 --> DB
+    M1 & M3 --> ST
 ```
 
-Tickets and updates are kept in the browser's `localStorage`, so changes survive a page refresh on the same device. They are not shared between users. Moving to a real deployment would mean replacing this storage with a server and database.
+Advisories, zones and tickets are stored in Supabase, so everyone sees the same data. Row Level Security rules in the database decide who may read or change each table. The map and the admin dashboard still use sample data until their modules are connected.
 
 ### Web engineering principles applied
 
@@ -117,18 +122,25 @@ Tickets and updates are kept in the browser's `localStorage`, so changes survive
 - **Responsive design:** layouts that stack on narrow screens
 - **Light and dark themes:** colours follow the visitor's system setting
 - **Input validation:** required fields and photo type and size checks before a ticket is created
-- **Separation of concerns:** structure (`pages/`), style (`css/`) and behaviour (`js/`) kept in separate files, one per page
+- **Separation of concerns:** one folder per module, each with its own pages (React components) and its own database calls (`api.js`); shared parts live in `src/shared/`
 
 ## Try it
 
 Open the live site: `https://<your-username>.github.io/CMT322-Assignment1-lrt-mutiara-portal/`
 
-Or run it locally. Download the repository, open the folder in VS Code and use **Open with Live Server** on `index.html`. Opening the file by double-click will not work, because the pages are loaded with JavaScript modules.
+Or run it locally (needs Node.js):
+
+```
+npm install
+npm run dev
+```
+
+Then open the address it prints, usually `http://localhost:5173`. The page reloads by itself when you save a file. See [SETUP.md](SETUP.md) for the database setup.
 
 **A suggested walkthrough**
 
-1. On **Home**, search for a notice or open one of the three cards, then read the questions at the bottom.
-2. On **Updates**, filter by zone and status.
+1. On **Home**, select one of today's numbers or search for an advisory, then read the questions at the bottom.
+2. On **Advisories**, filter by area, type and status, then open an advisory.
 3. On **Map**, move the date slider, select a closed road and press *Report an issue here*.
 4. Submit the form and note the ticket number.
 5. Open **Feedback** and enter that number.
@@ -138,17 +150,26 @@ Or run it locally. Download the repository, open the folder in VS Code and use *
 
 ```text
 .
-├── index.html          app shell: header, footer, empty <main>
-├── css/style.css       all styles
-├── pages/              one HTML file per page (home, updates, map, report, track, admin)
-├── js/
-│   ├── app.js          loads the pages into the shell and starts them
-│   ├── router.js       shows one page at a time
-│   ├── util.js         shared helpers and lists
-│   ├── api.js          all calls to Supabase
-│   ├── config.js       Supabase URL and anon key
-│   └── pages/          one script per page
-├── supabase/           database schema and sample data
+├── index.html              starts the React app (Vite entry page)
+├── src/
+│   ├── main.jsx            starts React
+│   ├── App.jsx             puts every module's pages inside the shared layout
+│   ├── shared/             used by all modules
+│   │   ├── Layout.jsx      header, menu, footer
+│   │   ├── supabase.js     the Supabase connection and small helpers
+│   │   ├── config.js       Supabase URL and anon key
+│   │   ├── ZoneSelect.jsx  area dropdown, Icon.jsx icons, util.js dates and lists
+│   │   ├── staff.jsx       simulated staff sign-in
+│   │   └── styles.css      all styles
+│   └── modules/            one folder per module, each with api.js (database calls) and routes.jsx (pages)
+│       ├── advisories/     Module 1: home, advisories, advisory detail, schedule, My advisories, urgent banner
+│       ├── map/            Module 2: disruption map
+│       ├── complaints/     Module 3: report a concern, ticket tracking
+│       └── admin/          Module 4: sign-in and staff dashboard
+├── public/assets/img/      photos used by the site and the sample advisories
+├── supabase/               database schema and sample data
+├── .github/workflows/      builds the site and publishes it to GitHub Pages
+├── test.html               Supabase connection test (open /test.html while npm run dev runs)
 ├── README.md           this file
 └── docs/
     ├── banner.svg
