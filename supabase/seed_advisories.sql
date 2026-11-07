@@ -1,7 +1,7 @@
 -- Sample advisories for Module 1. Roads, businesses and dates are examples only.
 -- Run after seed.sql and the 20261108000000_advisories migration. Safe to run again:
 -- it removes every advisory first (map features linked to them are kept, just unlinked).
--- Photos are real Mutiara Line construction photos from Wikimedia Commons, see assets/img/CREDITS.md.
+-- Photos are real Mutiara Line construction photos from Wikimedia Commons, see public/assets/img/CREDITS.md.
 delete from public.updates;
 
 insert into public.updates

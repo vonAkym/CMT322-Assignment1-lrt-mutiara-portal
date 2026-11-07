@@ -3,7 +3,7 @@
 Supabase is Postgres plus a ready-made API, login and file storage. Your web pages call it directly, so you need no server of your own.
 
 ```
-Browser (index.html + js/api.js)  -->  Supabase API  -->  Postgres (tables, RLS, functions)
+Browser (React app, src/)  -->  Supabase API  -->  Postgres (tables, RLS, functions)
                                           |-- Auth (staff sign in)
                                           '-- Storage (complaint photos)
 ```
@@ -13,8 +13,8 @@ Browser (index.html + js/api.js)  -->  Supabase API  -->  Postgres (tables, RLS,
 | Tool | Why | Check |
 | --- | --- | --- |
 | Git | Push to your GitHub repo | `git --version` |
-| Node.js LTS | Runs the Supabase CLI (`npx`) | `node --version` |
-| VS Code + the Live Server extension | Edit and run the pages | |
+| Node.js LTS (22 or newer) | Runs the site with Vite (`npm run dev`) and the Supabase CLI (`npx`) | `node --version` |
+| VS Code | Edit the code | |
 
 You do not need Docker. Use a cloud Supabase project (free).
 
@@ -44,13 +44,18 @@ Posting, editing and ending advisories (UC06 to UC08) need a signed-in staff acc
 `supabase/dev/demo_without_signin.sql` to let the site save without signing in. While it is on, **anyone** with the site
 can change advisories, so turn it off with `supabase/dev/undo_demo_without_signin.sql` once sign-in works or the demo is over.
 
-## 4. Connect the front end
+## 4. Run the site on your PC
 
-1. In the `js` folder, make a copy of `config.example.js` and name it `config.js`. Paste your Project URL and anon key into it.
-2. In VS Code, right-click `test.html` and choose **Open with Live Server**.
-3. The page should say "Connected. 3 zones and 7 published advisories found." If not, press F12 and read the Console.
+1. Open `src/shared/config.js` and check the Project URL and anon key are your project's (the team's project is already filled in).
+2. In the project folder, run `npm install` once. It downloads React, Vite and the Supabase library into `node_modules/`.
+3. Run `npm run dev` and open the address it prints, usually `http://localhost:5173`. Keep it running while you work: the browser reloads by itself when you save a file.
+4. To test the database connection, open `http://localhost:5173/test.html`. It should say "Connected. 3 zones and 7 published advisories found." If not, press F12 and read the Console.
 
-Opening files by double-click will not work, because `js/api.js` is an ES module. Always use Live Server.
+Opening `index.html` by double-click or with Live Server will not work: the React code has to go through Vite. Always use `npm run dev`.
+
+### Publishing the live site
+
+Pushing to `main` starts the workflow in `.github/workflows/deploy.yml`, which runs `npm run build` and publishes the `dist/` folder to GitHub Pages. One-time setup: on GitHub, open **Settings, Pages** and set **Source** to **GitHub Actions**. Progress shows under the repository's **Actions** tab. To check a build yourself, run `npm run build`, then `npm run preview`.
 
 ## 5. Create your staff account
 
@@ -64,23 +69,20 @@ where id = (select id from auth.users where email = 'you@example.com');
 
 Only staff roles can read tickets, change ticket status and post updates. Everyone else gets nothing back, because of the Row Level Security rules in the schema.
 
-## 6. Replace the sample data in index.html
+## 6. Where each module's code lives
 
-The current `index.html` keeps sample data in the browser. Swap each part for a call in `js/api.js`:
+Each module has its own folder in `src/modules/`. Inside it, `api.js` holds that module's database calls, `routes.jsx` lists its pages and their addresses, and each page is one `.jsx` file. Shared parts (layout, Supabase connection, area dropdown, icons, styles) are in `src/shared/`.
 
-| Page | Replace this | With this |
-| --- | --- | --- |
-| Advisories and home search | the `U` array | `listAdvisories({zoneId, category, status, severity, onDate, q})`, `getAdvisory(id)`, `hubSummary()`, `listUrgent()`, `listSchedule()` |
-| Zones dropdowns | the `ZONES` array | `listZones()` |
-| Zone alerts | the confirmation message | `subscribeToZone(zoneId, email)` |
-| Map | the `M` array | `listMapFeatures()` |
-| Report form | pushing to `T` | `submitTicket({...})`, show the returned number |
-| Feedback (track) | looking up `T` | `trackTicket(number)` |
-| Sign in | the fake button | `signIn()`, `myProfile()` |
-| Admin | the `T` array | `listTickets()`, `updateTicket()` |
-| My advisories (staff) | | `listMyAdvisories()`, `saveAdvisory()`, `publishAdvisory()`, `endAdvisory()`, `uploadAdvisoryPhoto()` |
+| Module | Folder | Pages | Database calls (`api.js`) | Still to do |
+| --- | --- | --- | --- | --- |
+| 1. Advisories | `advisories/` | Home, Advisories, advisory detail, Schedule, My advisories, urgent banner | `listAdvisories()`, `getAdvisory()`, `hubSummary()`, `listUrgent()`, `listSchedule()`, `listMyAdvisories()`, `saveAdvisory()`, `publishAdvisory()`, `endAdvisory()`, `uploadAdvisoryPhoto()` | Zone alerts: use `subscribeToZone(zoneId, email)` instead of the confirmation message |
+| 2. Map | `map/` | Map | `listMapFeatures()` | Replace the sample `M` list in `MapPage.jsx` |
+| 3. Complaints | `complaints/` | Report, Feedback | `submitTicket()`, `trackTicket()` | Done |
+| 4. Admin | `admin/` | Admin dashboard | `signIn()`, `signOut()`, `myProfile()`, `listTickets()`, `updateTicket()` | Replace the simulated sign-in in `src/shared/staff.jsx` and the sample tickets in `AdminPage.jsx` |
 
-Load the script with `<script type="module">` and `import { ... } from './js/api.js'`.
+`listZones()` is shared and lives in `src/shared/supabase.js`; the `ZoneSelect` dropdown uses it.
+
+To add a page: create the `.jsx` file in your module's folder and add one line to that module's `routes.jsx`. Use `staff: true` for staff-only pages. Link to other pages with `<Link to="/address">` from `react-router`.
 
 ## 7. Suggested order of work (split among 4 members)
 
