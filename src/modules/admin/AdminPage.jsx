@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { STAT } from '../../shared/util.js';
+import PageHero from '../../shared/PageHero.jsx';
 
 const STAFF = ['Unassigned', 'Officer A', 'Officer B', 'Construction team'];
 const SAMPLE = [
@@ -37,7 +38,7 @@ export default function AdminPage() {
 
   return (
     <section>
-      <h1>Operational dashboard</h1>
+      <PageHero kicker="Staff" title="Operational dashboard" sub="Tickets by category and status across the Mutiara Line works." />
       <div className="stack" style={{ paddingBottom: 28 }}>
         <div className="stats">{stats.map(([label, value]) => <div className="card" key={label}><span className="mut">{label}</span><b>{value}</b></div>)}</div>
         <div className="row r3" style={{ padding: 0 }}>

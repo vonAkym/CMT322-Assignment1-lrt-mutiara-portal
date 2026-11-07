@@ -7,6 +7,7 @@ import { isPhotoOk } from '../../shared/supabase.js';
 import { CATS, SEVERITY, dateRange, ago, todayISO } from '../../shared/util.js';
 import { myProfile } from '../admin/api.js';
 import { listMyAdvisories, saveAdvisory, publishAdvisory, endAdvisory, uploadAdvisoryPhoto, photoUrl } from './api.js';
+import PageHero from '../../shared/PageHero.jsx';
 
 const MAX_PHOTOS = 5;
 const STATES = [['Draft', 'Drafts'], ['Published', 'Published'], ['Ended', 'Ended']];
@@ -183,8 +184,9 @@ export default function ManagePage() {
 
   return (
     <section>
-      <div className="mh"><div><h1>My advisories</h1><p className="mut">Post, edit, publish and end construction advisories.</p></div>
-        <button type="button" className="btn" onClick={() => openForm()}>+ New advisory</button></div>
+      <PageHero kicker="Staff" photo="advisory-viaduct.jpg" title="My advisories" sub="Post, edit, publish and end construction advisories.">
+        <div className="ctas" style={{ justifyContent: 'flex-start' }}><button type="button" className="btn gold" onClick={() => openForm()}>+ New advisory</button></div>
+      </PageHero>
       {demo && <p className="note"><b>Demo mode.</b> Staff sign-in is not connected yet, so this page lists every advisory. Saving works only after <code>supabase/dev/demo_without_signin.sql</code> has been run in Supabase (see SETUP.md).</p>}
 
       {open && (
