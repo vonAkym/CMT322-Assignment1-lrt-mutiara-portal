@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { STAT, when } from '../../shared/util.js';
 import { trackTicket } from './api.js';
+import PageHero from '../../shared/PageHero.jsx';
 
 // Address of this page that looks up a ticket straight away, e.g. after submitting a report.
 export const trackUrl = (ticketNo) => `/track?ticket=${encodeURIComponent(ticketNo)}`;
@@ -39,7 +40,8 @@ export default function TrackPage() {
 
   return (
     <section>
-      <h1>Feedback and ticket tracking</h1>
+      <PageHero kicker="Feedback" photo="advisory-komtar-detour.jpg" title="Feedback and ticket tracking"
+        sub="Enter your ticket number to see its status and full history." />
       <div className="row r3">
         <div className="card stack">
           <div><label htmlFor="tq">Ticket number</label>
