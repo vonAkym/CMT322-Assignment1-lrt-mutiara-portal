@@ -1,8 +1,9 @@
-// Content shared by the three landing alternatives: navbar, hero text, quick search, feature cards,
+// Content shared by the landing alternatives: navbar, hero text, quick search, feature cards,
 // key numbers, FAQ and footer. Each option only arranges these pieces differently.
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import Icon from '../shared/Icon.jsx';
+import Logo from '../shared/Logo.jsx';
 import ZoneSelect from '../shared/ZoneSelect.jsx';
 import { useStaff } from '../shared/staff.jsx';
 import { hubSummary } from '../modules/advisories/api.js';
@@ -11,18 +12,21 @@ import './landing.css';
 
 const FONT = 'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap';
 
-// Loads the landing font once and starts each landing page at the top.
-export function useLandingPage(title) {
+const loadFont = (id, href) => {
+  if (document.getElementById(id)) return;
+  document.head.appendChild(Object.assign(document.createElement('link'), { id, rel: 'stylesheet', href }));
+};
+
+// Loads the landing font (plus an extra one, for option D) once and starts each landing page at the top.
+export function useLandingPage(title, extraFont) {
   useEffect(() => {
-    if (!document.getElementById('lp-font')) {
-      const l = Object.assign(document.createElement('link'), { id: 'lp-font', rel: 'stylesheet', href: FONT });
-      document.head.appendChild(l);
-    }
+    loadFont('lp-font', FONT);
+    if (extraFont) loadFont(`lp-font-${title.replace(/\W+/g, '-').toLowerCase()}`, extraFont);
     window.scrollTo(0, 0);
     const old = document.title;
     document.title = `${title} · MutiaraInfo`;
     return () => { document.title = old; };
-  }, [title]);
+  }, [title, extraFont]);
 }
 
 // True while the visitor's system asks for less motion. Follows changes made while the page is open.
@@ -54,7 +58,10 @@ export const Arrow = ({ size = 18 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
 );
 
-export const Brand = () => (
+// logo: true shows the site logo (the circled M) instead of the older train badge.
+export const Brand = ({ logo }) => logo ? (
+  <Link className="lp-brand" to="/landing" aria-label="MutiaraInfo, landing alternatives"><Logo /></Link>
+) : (
   <Link className="lp-brand" to="/landing" aria-label="MutiaraInfo, landing alternatives">
     <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true">
       <defs><linearGradient id="lp-logo" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#38BDF8" /><stop offset="1" stopColor="#14B8A6" /></linearGradient></defs>
@@ -70,7 +77,7 @@ export const Brand = () => (
 
 const LINKS = [['/advisories', 'Updates'], ['/map', 'Map'], ['/report', 'Report'], ['/track', 'Track Ticket']];
 
-export function LandingNav() {
+export function LandingNav({ logo }) {
   const navigate = useNavigate();
   const { setStaff } = useStaff();
   const [open, setOpen] = useState(false);
@@ -89,7 +96,7 @@ export function LandingNav() {
   return (
     <header className="lp-nav">
       <div className="lp-wrap">
-        <Brand />
+        <Brand logo={logo} />
         <nav className="lp-links" aria-label="Main">
           {LINKS.map(([to, label]) => <Link key={to} to={to}>{label}</Link>)}
           <button type="button" onClick={faq}>FAQ</button>
@@ -202,11 +209,11 @@ export function Faq({ heading = true }) {
   );
 }
 
-export function LandingFooter() {
+export function LandingFooter({ logo }) {
   return (
     <footer className="lp-foot">
       <div className="lp-wrap">
-        <Brand />
+        <Brand logo={logo} />
         <nav className="lp-foot-links" aria-label="Footer">
           {LINKS.map(([to, label]) => <Link key={to} to={to}>{label}</Link>)}
         </nav>

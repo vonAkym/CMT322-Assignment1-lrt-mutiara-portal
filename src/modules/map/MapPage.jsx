@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { reportUrl } from '../complaints/ReportPage.jsx';
+import PageHero from '../../shared/PageHero.jsx';
 
 // l = layer, n = name, s = status, f/t = first and last sample day, x/y = position, p = line path, d = details.
 const M = [
@@ -19,14 +20,14 @@ const M = [
   { l: 'stn', n: 'Sample Station D', s: 'Station', f: 1, t: 14, x: 650, y: 200, d: 'Sample station. No works nearby.' },
   { l: 'stn', n: 'Penang Sentral', s: 'Station', f: 1, t: 14, x: 800, y: 100, d: 'Sample station at the northern end of the line.' },
 ];
-const COL = { closure: 'var(--red)', walk: 'var(--walk)', detour: 'var(--ok)' };
+const COL = { closure: 'var(--red)', walk: 'var(--walk)', detour: 'var(--det)' };
 const BLOCKS = [[30, 40, 160, 90], [330, 30, 150, 90], [680, 30, 170, 80], [30, 160, 190, 120], [330, 170, 170, 100], [690, 230, 170, 120], [330, 420, 70, 90], [420, 420, 170, 90], [660, 400, 200, 110], [40, 460, 150, 50]];
 const LINE = '60,430 180,400 300,330 420,300 520,230 650,200 800,100';
 const LAYERS = [
   ['stn', 'LRT line and stations', <><path d="M0 9H26" stroke="var(--pri)" strokeWidth="6" /><circle cx="13" cy="9" r="6" fill="var(--sf)" stroke="var(--pri)" strokeWidth="3" /></>],
   ['closure', 'Road closures', <path d="M0 9H26" stroke="var(--red)" strokeWidth="6" />],
   ['walk', 'Pedestrian routes', <path d="M0 9H26" stroke="var(--walk)" strokeWidth="4" strokeDasharray="6 4" />],
-  ['detour', 'Detour routes', <path d="M0 9H26" stroke="var(--ok)" strokeWidth="4" strokeDasharray="2 4" strokeLinecap="round" />],
+  ['detour', 'Detour routes', <path d="M0 9H26" stroke="var(--det)" strokeWidth="4" strokeDasharray="2 4" strokeLinecap="round" />],
   ['biz', 'Business access', <rect x="4" y="1" width="16" height="16" rx="3" fill="var(--ok)" />],
 ];
 const W = 900, H = 520, FULL = { x: 0, y: 0, w: W, h: H };
@@ -103,8 +104,8 @@ export default function MapPage() {
 
   return (
     <section>
-      <h1>Construction and disruption map</h1>
-      <p className="mut">Schematic map of the LRT Mutiara Line, not to scale. Station names, roads and dates are samples.</p>
+      <PageHero kicker="Disruption map" photo="advisory-barriers.jpg" title="Construction and disruption map"
+        sub="Schematic map of the LRT Mutiara Line, not to scale. Station names, roads and dates are samples." />
       <div className="row r2">
         <div className="card stack" style={{ alignSelf: 'start' }}>
           <form onSubmit={find}>

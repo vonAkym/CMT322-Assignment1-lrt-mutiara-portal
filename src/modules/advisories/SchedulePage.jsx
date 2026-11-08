@@ -4,6 +4,7 @@ import { Link } from 'react-router';
 import ZoneSelect from '../../shared/ZoneSelect.jsx';
 import { todayISO, addDays, daysBetween, day, dateRange } from '../../shared/util.js';
 import { listSchedule } from './api.js';
+import PageHero from '../../shared/PageHero.jsx';
 
 const SPAN = 28; // days shown on the timeline, starting today
 const pct = (days) => `${(days / SPAN) * 100}%`;
@@ -44,8 +45,8 @@ export default function SchedulePage() {
 
   return (
     <section>
-      <h1>Works schedule</h1>
-      <p className="mut">Ongoing and upcoming works by area. Each bar shows when the work runs over the next four weeks.</p>
+      <PageHero kicker="Works schedule" photo="advisory-viaduct.jpg" title="What runs when, area by area"
+        sub="Ongoing and upcoming works by area. Each bar shows when the work runs over the next four weeks." />
       <div className="sch-top">
         <div><label htmlFor="schz">Area</label><ZoneSelect id="schz" all="All areas" value={zone} onChange={setZone} /></div>
         <p className="sch-key mut" aria-hidden="true"><span className="sch-sw on" />Under way <span className="sch-sw" />Planned</p>

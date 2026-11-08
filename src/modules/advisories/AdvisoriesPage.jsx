@@ -8,6 +8,7 @@ import { CATS } from '../../shared/util.js';
 import { listAdvisories } from './api.js';
 import AdvisoryCard from './AdvisoryCard.jsx';
 import ZoneAlerts from './ZoneAlerts.jsx';
+import PageHero from '../../shared/PageHero.jsx';
 
 // Builds the address of this page with some filters set, e.g. advisoriesUrl({ status: 'Ongoing', urgent: true }).
 // Keys: q, zone, category, status ('Planned', 'Ongoing' or 'ended'), date (YYYY-MM-DD), urgent.
@@ -56,8 +57,8 @@ export default function AdvisoriesPage() {
   const ended = f.status === 'ended';
   return (
     <section>
-      <h1>Construction advisories</h1>
-      <p className="mut">Road closures, works schedules, business access and progress from the project teams.</p>
+      <PageHero kicker="Construction advisories" photo="advisory-piling.jpg" title="Every works notice on the line"
+        sub="Road closures, works schedules, business access and progress from the project teams." />
       <div className="row r1">
         <div className="card stack" style={{ alignSelf: 'start' }}>
           <h2>Filter advisories</h2>

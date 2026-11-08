@@ -1,4 +1,4 @@
-// Preview page for the three landing alternatives: one card per option, plus a link to the current home page.
+// Preview page for the landing alternatives: one card per option, plus a link to the current home page.
 import { Link } from 'react-router';
 import { Arrow, Brand, useLandingPage } from './parts.jsx';
 
@@ -7,12 +7,14 @@ const MOCKS = {
   a: [['t', 6, 22, 30, 0], ['t', 6, 34, 22, 0], ['o', 6, 52, 14, 0], ['', 22, 50, 14, 7], ['s', 52, 14, 42, 58], ['', 6, 78, 88, 10]],
   b: [['t', 30, 14, 40, 0], ['t', 36, 26, 28, 0], ['o', 38, 40, 11, 0], ['', 51, 38, 11, 7], ['g', 0, 56, 100, 22], ['', 16, 72, 68, 10]],
   c: [['', 6, 10, 42, 46], ['s', 52, 10, 42, 46], ['', 6, 60, 88, 9], ['g', 6, 73, 20, 18], ['', 29, 73, 20, 18], ['s', 52, 73, 20, 18], ['', 75, 73, 19, 18]],
+  d: [['p', 0, 0, 100, 62], ['w', 28, 22, 44, 0], ['w', 34, 32, 32, 0], ['y', 40, 44, 20, 0], ['', 6, 70, 28, 24], ['', 36, 70, 28, 24], ['', 66, 70, 28, 24]],
 };
 
 const OPTIONS = [
   { id: 'a', name: 'Option A: Split hero', text: 'Headline and buttons on the left, a layered 3D train scene on the right that tilts with the mouse.' },
   { id: 'b', name: 'Option B: Centred hero', text: 'Centred headline, with the train gliding along an elevated track across the bottom of the hero.' },
   { id: 'c', name: 'Option C: Bento grid', text: 'Everything in rounded tiles. The 3D train is a large Three.js tile that slowly turns.' },
+  { id: 'd', name: 'Option D: Photo hero', text: 'Full-screen Penang photo under a green wash, in the style of the Penang Tourism site, with photo cards for the latest updates.' },
 ];
 
 export default function LandingIndex() {
@@ -28,7 +30,7 @@ export default function LandingIndex() {
       <main className="lp-wrap">
         <section className="lp-section" style={{ paddingBottom: 0 }}>
           <h1 className="lp-h1" style={{ fontSize: 'clamp(32px, 4vw, 48px)', marginTop: 0 }}>Landing page alternatives</h1>
-          <p className="lp-lead">Three designs for the MutiaraInfo home page, using the same live data and links. Open each one and compare.</p>
+          <p className="lp-lead">Four designs for the MutiaraInfo home page, using the same live data and links. Open each one and compare.</p>
         </section>
         <div className="lp-previews">
           {OPTIONS.map((o) => (
