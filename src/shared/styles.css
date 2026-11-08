@@ -264,11 +264,33 @@ table{width:100%;border-collapse:collapse;font-size:13px}th{text-align:left;back
 /* ===== Module 1: urgent banner (UC05) ===== */
 .ubar { background: var(--warnbg); color: var(--warntx); border-bottom: 1px solid #E8C979; }
 .ubar .w { display: flex; align-items: center; gap: 10px; min-height: 52px; }
-.ubar .w > svg { flex: none; }
-.ubar p { flex: 1; margin: 0; font-size: 15px; }
-.ubar-link { padding: 0 2px; background: none; border: 0; color: inherit; font: inherit; font-weight: 600; text-decoration: underline; cursor: pointer; }
+.ubar-tag { flex: none; display: flex; align-items: center; gap: 8px; font-size: 15px; }
 .ubar-x { flex: none; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; background: none; border: 0; border-radius: 8px; color: inherit; cursor: pointer; }
 .ubar-x:hover { background: rgba(0, 0, 0, .08); }
+/* The ticker: two copies of the list slide left by exactly one copy's width, then start again, so the loop
+   has no visible seam. The edges fade so alerts slide in and out softly. */
+.ubar-view {
+  flex: 1; min-width: 0; overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 24px, #000 calc(100% - 24px), transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 24px, #000 calc(100% - 24px), transparent);
+}
+.ubar-track { display: flex; width: max-content; animation: ubar-scroll var(--dur, 30s) linear infinite; }
+.ubar-track.paused, .ubar-view:hover .ubar-track { animation-play-state: paused; }
+.ubar-view:focus-within .ubar-track { animation: none; }
+.ubar-items { display: flex; flex: none; min-width: var(--vw, 0px); margin: 0; padding: 0; list-style: none; }
+.ubar-items li { flex: none; display: flex; align-items: center; }
+.ubar-items li::after { content: "•"; margin: 0 24px; opacity: .6; }
+.ubar-items a { display: block; padding: 12px 2px; color: inherit; font-size: 15px; text-decoration: none; white-space: nowrap; }
+.ubar-items a:hover { text-decoration: underline; }
+.ubar-when { font-weight: 400; }
+@keyframes ubar-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+/* Reduced motion: no scrolling. The alerts sit still and can be swiped sideways; the pause button is not needed. */
+@media (prefers-reduced-motion: reduce) {
+  .ubar-track { animation: none; }
+  .ubar-view { overflow-x: auto; -webkit-mask-image: none; mask-image: none; }
+  .ubar-items[aria-hidden="true"], .ubar-play { display: none; }
+}
+@media (max-width: 560px) { .ubar-tag b { display: none; } }
 
 /* ===== Module 1: works schedule (UC04) ===== */
 .sch-top { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; margin: 16px 0; }
