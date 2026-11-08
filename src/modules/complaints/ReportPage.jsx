@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router';
 import { isPhotoOk } from '../../shared/supabase.js';
 import { submitTicket } from './api.js';
 import { trackUrl } from './TrackPage.jsx';
+import PageHero from '../../shared/PageHero.jsx';
 
 const CATEGORIES = ['Noise', 'Dust', 'Road damage', 'Safety hazard', 'Blocked access', 'Other'];
 
@@ -50,7 +51,8 @@ export default function ReportPage() {
 
   return (
     <section>
-      <h1>Report a concern</h1>
+      <PageHero kicker="Report" photo="advisory-footpath.jpg" title="Report a concern"
+        sub="Noise, dust, damage or blocked access near the works? Tell the team and get a ticket number straight away." />
       <div className="row r3">
         <form className="card stack" noValidate onSubmit={submit}>
           <div><label htmlFor="rc">Category</label><select id="rc" className="in" {...field('category')}>{CATEGORIES.map((c) => <option key={c}>{c}</option>)}</select></div>
