@@ -275,7 +275,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th{text-align:left;back
   mask-image: linear-gradient(90deg, transparent, #000 24px, #000 calc(100% - 24px), transparent);
 }
 .ubar-track { display: flex; width: max-content; animation: ubar-scroll var(--dur, 30s) linear infinite; }
-.ubar-track.paused, .ubar-view:hover .ubar-track { animation-play-state: paused; }
+.ubar-view:hover .ubar-track { animation-play-state: paused; }
 .ubar-view:focus-within .ubar-track { animation: none; }
 .ubar-items { display: flex; flex: none; min-width: var(--vw, 0px); margin: 0; padding: 0; list-style: none; }
 .ubar-items li { flex: none; display: flex; align-items: center; }
@@ -284,11 +284,11 @@ table{width:100%;border-collapse:collapse;font-size:13px}th{text-align:left;back
 .ubar-items a:hover { text-decoration: underline; }
 .ubar-when { font-weight: 400; }
 @keyframes ubar-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-/* Reduced motion: no scrolling. The alerts sit still and can be swiped sideways; the pause button is not needed. */
+/* Reduced motion: no scrolling. The alerts sit still and can be swiped sideways. */
 @media (prefers-reduced-motion: reduce) {
   .ubar-track { animation: none; }
   .ubar-view { overflow-x: auto; -webkit-mask-image: none; mask-image: none; }
-  .ubar-items[aria-hidden="true"], .ubar-play { display: none; }
+  .ubar-items[aria-hidden="true"] { display: none; }
 }
 @media (max-width: 560px) { .ubar-tag b { display: none; } }
 

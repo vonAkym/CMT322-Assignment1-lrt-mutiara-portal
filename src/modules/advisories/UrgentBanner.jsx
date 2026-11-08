@@ -1,7 +1,6 @@
 // Urgent alert banner (UC05): every high-severity advisory scrolls across the top of every page, right to left.
-// Selecting one opens it. The ticker pauses on hover, on keyboard focus and with its pause button, and stands
-// still for visitors who ask their system for reduced motion. Hiding it lasts for this browser tab, until the
-// urgent advisories change.
+// Selecting one opens it. The ticker pauses on hover and on keyboard focus, and stands still for visitors who
+// ask their system for reduced motion. The × button hides it for this browser tab, until the urgent advisories change.
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import Icon from '../../shared/Icon.jsx';
@@ -35,7 +34,6 @@ const Items = ({ list, copy, listRef }) => (
 export default function UrgentBanner() {
   const [list, setList] = useState([]);
   const [hidden, setHidden] = useState(false);
-  const [paused, setPaused] = useState(false);
   const [size, setSize] = useState({ view: 0, list: 0 });
   const viewRef = useRef(null);
   const listRef = useRef(null);
@@ -77,13 +75,11 @@ export default function UrgentBanner() {
         {/* Keyboard focus stops the ticker and shows the list from the start; leaving it resets the scroll. */}
         <div className="ubar-view" ref={viewRef} onBlur={() => { viewRef.current.scrollLeft = 0; }}
           style={{ '--vw': `${size.view}px`, '--dur': `${seconds}s` }}>
-          <div className={`ubar-track${paused ? ' paused' : ''}`}>
+          <div className="ubar-track">
             <Items list={list} listRef={listRef} />
             <Items list={list} copy />
           </div>
         </div>
-        <button type="button" className="ubar-x ubar-play" aria-label={paused ? `Play the ${label}` : `Pause the ${label}`}
-          onClick={() => setPaused(!paused)}><Icon name={paused ? 'play' : 'pause'} size={18} /></button>
         <button type="button" className="ubar-x" aria-label={`Hide the ${label}`} onClick={hide}><Icon name="close" size={18} /></button>
       </div>
     </div>
