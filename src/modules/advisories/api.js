@@ -59,8 +59,17 @@ export async function listSchedule({ zoneId } = {}) {
   return ok(await r);
 }
 
-export const subscribeToZone = async (zoneId, email) =>
-  ok(await sb.from('subscriptions').insert({ zone_id: zoneId, email }));
+// Zone alerts: the same check the database makes on subscriptions.email.
+export const isEmail = (s) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(s).trim());
+
+// Zone alerts: saves an email for one area. Returns 'added', or 'already' when that email already follows the area
+// (the table allows each pair once; visitors cannot read the list back, only staff can).
+export async function subscribeToZone(zoneId, email) {
+  const { error } = await sb.from('subscriptions').insert({ zone_id: +zoneId, email: String(email).trim().toLowerCase() });
+  if (!error) return 'added';
+  if (error.code === '23505') return 'already';
+  throw error;
+}
 
 // ---------- Staff only (UC06 to UC08) ----------
 // Until staff sign-in exists, the database refuses these unless supabase/dev/demo_without_signin.sql was run.

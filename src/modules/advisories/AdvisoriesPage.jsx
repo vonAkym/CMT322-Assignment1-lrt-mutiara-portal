@@ -3,10 +3,11 @@
 // can open this page with filters already set, and the back button restores them.
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router';
-import ZoneSelect, { useZones } from '../../shared/ZoneSelect.jsx';
+import ZoneSelect from '../../shared/ZoneSelect.jsx';
 import { CATS } from '../../shared/util.js';
 import { listAdvisories } from './api.js';
 import AdvisoryCard from './AdvisoryCard.jsx';
+import ZoneAlerts from './ZoneAlerts.jsx';
 
 // Builds the address of this page with some filters set, e.g. advisoriesUrl({ status: 'Ongoing', urgent: true }).
 // Keys: q, zone, category, status ('Planned', 'Ongoing' or 'ended'), date (YYYY-MM-DD), urgent.
@@ -51,15 +52,6 @@ export default function AdvisoriesPage() {
     return () => { live = false; };
   }, [f.q, f.zone, f.category, f.status, f.date, f.urgent]);
 
-  // Zone alerts are still a simulation.
-  const zones = useZones();
-  const [subZone, setSubZone] = useState('');
-  const [subMsg, setSubMsg] = useState('');
-  const subscribe = () => {
-    const z = zones.find((x) => String(x.id) === subZone) || zones[0];
-    setSubMsg(`Subscribed. You will get alerts for ${z ? z.name : 'this area'} (simulation only).`);
-  };
-
   const { list, error } = res;
   const ended = f.status === 'ended';
   return (
@@ -83,9 +75,7 @@ export default function AdvisoriesPage() {
           <label className="chk"><input type="checkbox" id="fu" checked={f.urgent} onChange={(e) => set('urgent', e.target.checked)} /> Urgent only</label>
           <button type="button" className="btn s" onClick={() => { setQ(''); setParams({}, { replace: true }); }}>Clear filters</button>
           <hr className="sep" />
-          <div><label htmlFor="sz">Alert me about an area</label><ZoneSelect id="sz" value={subZone} onChange={setSubZone} /></div>
-          <button className="btn" onClick={subscribe}>Subscribe</button>
-          <p className="mut" role="status">{subMsg}</p>
+          <ZoneAlerts />
         </div>
         <div>
           <p className="mut" role="status">{list && !error ? `${list.length} ${ended ? 'ended ' : ''}advisor${list.length === 1 ? 'y' : 'ies'}` : ''}</p>
