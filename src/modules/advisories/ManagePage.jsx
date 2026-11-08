@@ -6,7 +6,7 @@ import ZoneSelect from '../../shared/ZoneSelect.jsx';
 import { isPhotoOk } from '../../shared/supabase.js';
 import { CATS, SEVERITY, dateRange, ago, todayISO } from '../../shared/util.js';
 import { myProfile } from '../admin/api.js';
-import { listMyAdvisories, saveAdvisory, publishAdvisory, endAdvisory, uploadAdvisoryPhoto, photoUrl } from './api.js';
+import { listMyAdvisories, saveAdvisory, publishAdvisory, endAdvisory, uploadAdvisoryPhoto, photoUrl, isOverdue } from './api.js';
 import PageHero from '../../shared/PageHero.jsx';
 
 const MAX_PHOTOS = 5;
@@ -176,6 +176,8 @@ export default function ManagePage() {
   };
 
   const rows = all.filter((a) => a.state === tab);
+  // Published advisories past their end date: the public already sees them as ended, but staff should confirm.
+  const overdue = all.filter(isOverdue).length;
   const thumbs = [
     ...kept.map((p, i) => ({ src: photoUrl(p), list: 'kept', i })),
     ...added.map((p, i) => ({ src: p.preview, list: 'added', i })),
@@ -237,6 +239,10 @@ export default function ManagePage() {
           </button>
         ))}
       </div>
+      {tab === 'Published' && overdue > 0 && (
+        <p className="note"><b>{overdue} published advisor{overdue === 1 ? 'y has' : 'ies have'} passed the end date.</b> The public
+          already sees {overdue === 1 ? 'it' : 'them'} as ended. Press End if the work has finished, or Edit to move the end date if it is running late.</p>
+      )}
       {okMsg && <p className="ok" role="status">{okMsg}</p>}
       {listErr && <p className="err" role="alert">{listErr}</p>}
       <div className="card" style={{ padding: 0, overflowX: 'auto' }}>
@@ -245,7 +251,8 @@ export default function ManagePage() {
           <tbody>
             {rows.map((a) => (
               <tr key={a.id}>
-                <td><b>{a.title}</b>{a.severity === 'High' && <> <span className="pill hot">Urgent</span></>}<br />
+                <td><b>{a.title}</b>{a.severity === 'High' && <> <span className="pill hot">Urgent</span></>}
+                  {isOverdue(a) && <> <span className="pill late">Past end date</span></>}<br />
                   <span className="mut">{a.status}{a.location ? ` · ${a.location}` : ''}</span></td>
                 <td>{a.category}</td><td>{a.zones ? a.zones.name : 'All areas'}</td>
                 <td>{dateRange(a.starts_on, a.ends_on)}</td><td>{ago(a.updated_at)}</td>

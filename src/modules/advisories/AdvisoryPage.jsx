@@ -4,7 +4,7 @@ import { Link, useNavigate, useParams } from 'react-router';
 import Icon from '../../shared/Icon.jsx';
 import { dateRange, ago } from '../../shared/util.js';
 import { reportUrl } from '../complaints/ReportPage.jsx';
-import { getAdvisory, photoUrl } from './api.js';
+import { getAdvisory, photoUrl, isOver } from './api.js';
 import { where } from './AdvisoryCard.jsx';
 
 // Plain text from the database, with its line breaks kept.
@@ -34,7 +34,7 @@ function Gallery({ a }) {
 
 function Advisory({ a }) {
   const navigate = useNavigate();
-  const ended = a.state === 'Ended';
+  const ended = isOver(a); // ended by staff, or past its end date
   const pill = ended ? 'dn' : a.status === 'Ongoing' ? 'on' : '';
   return (
     <>
