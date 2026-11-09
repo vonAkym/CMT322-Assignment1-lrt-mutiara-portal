@@ -8,6 +8,7 @@ import { CATS, SEVERITY, dateRange, ago, todayISO } from '../../shared/util.js';
 import { myProfile } from '../admin/api.js';
 import { listMyAdvisories, saveAdvisory, publishAdvisory, endAdvisory, uploadAdvisoryPhoto, photoUrl, isOverdue } from './api.js';
 import PageHero from '../../shared/PageHero.jsx';
+import usePageTitle from '../../shared/usePageTitle.js';
 
 const MAX_PHOTOS = 5;
 const STATES = [['Draft', 'Drafts'], ['Published', 'Published'], ['Ended', 'Ended']];
@@ -38,6 +39,7 @@ function Actions({ a, busy, onAct }) {
 
 export default function ManagePage() {
   const navigate = useNavigate();
+  usePageTitle('My advisories');
   const [all, setAll] = useState([]);
   const [tab, setTab] = useState('Published');
   const [okMsg, setOkMsg] = useState('');

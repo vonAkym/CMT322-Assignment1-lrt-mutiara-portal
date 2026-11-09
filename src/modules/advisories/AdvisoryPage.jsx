@@ -5,6 +5,7 @@ import Icon from '../../shared/Icon.jsx';
 import { dateRange, ago } from '../../shared/util.js';
 import { reportUrl } from '../complaints/ReportPage.jsx';
 import { getAdvisory, photoUrl, isOver } from './api.js';
+import usePageTitle from '../../shared/usePageTitle.js';
 import { where } from './AdvisoryCard.jsx';
 
 // Plain text from the database, with its line breaks kept.
@@ -77,6 +78,7 @@ function Advisory({ a }) {
 export default function AdvisoryPage() {
   const { id } = useParams();
   const [a, setA] = useState(undefined); // undefined while loading, null when not available
+  usePageTitle(a ? a.title : a === null ? 'Advisory not available' : 'Advisory');
 
   useEffect(() => {
     let live = true; // another advisory may be opened before this one arrives

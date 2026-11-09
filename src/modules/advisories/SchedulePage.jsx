@@ -5,6 +5,7 @@ import ZoneSelect from '../../shared/ZoneSelect.jsx';
 import { todayISO, addDays, daysBetween, day, dateRange } from '../../shared/util.js';
 import { listSchedule } from './api.js';
 import PageHero from '../../shared/PageHero.jsx';
+import usePageTitle from '../../shared/usePageTitle.js';
 
 const SPAN = 28; // days shown on the timeline, starting today
 const pct = (days) => `${(days / SPAN) * 100}%`;
@@ -29,6 +30,7 @@ const Scale = ({ today }) => [0, 7, 14, 21].map((n) =>
   <span key={n} style={{ left: pct(n) }}>{n ? day(addDays(today, n), false) : 'Today'}</span>);
 
 export default function SchedulePage() {
+  usePageTitle('Works schedule');
   const [zone, setZone] = useState('');
   const [res, setRes] = useState({ list: null, error: false });
   const today = todayISO();

@@ -15,6 +15,10 @@ export const photoUrl = (path) =>
 export const isOverdue = (a) => a.state === 'Published' && !!a.ends_on && a.ends_on < todayISO();
 export const isOver = (a) => a.state === 'Ended' || isOverdue(a);
 
+// Saving, publishing or ending an advisory announces it, so parts of the page that show advisories
+// (such as the urgent banner) can load them again.
+export const ADVISORIES_CHANGED = 'advisories-changed';
+
 // UC03: current advisories (or the ended archive), most recently updated first.
 // Current = published and not past the end date. Archive = ended, or published but past the end date.
 // onDate keeps only advisories whose works cover that day.
@@ -106,6 +110,7 @@ export async function saveAdvisory(id, fields) {
   const q = id ? sb.from('updates').update(fields).eq('id', id) : sb.from('updates').insert(fields);
   const { data, error } = await q.select(ADVISORY).single();
   if (error) throw refused(error) ? new Error(NO_RIGHTS) : error;
+  window.dispatchEvent(new Event(ADVISORIES_CHANGED)); // publishing and ending come through here too
   return data;
 }
 export const publishAdvisory = (id) => saveAdvisory(id, { state: 'Published' });
