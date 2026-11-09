@@ -52,12 +52,12 @@ export default function AdminPage() {
           </div>
         </div>
         <div className="card" style={{ padding: 0, overflowX: 'auto' }}>
-          <table>
+          <table className="tickets">
             <thead><tr><th>Ticket</th><th>Category</th><th>Issue</th><th>Priority</th><th>Status</th><th>Assigned to</th></tr></thead>
             <tbody>
               {T.map((t, i) => (
                 <tr key={t.id}>
-                  <td>{t.id}</td><td>{t.c}</td><td>{t.d}<br /><span className="mut">{t.l}</span></td>
+                  <td className="tno">{t.id}</td><td>{t.c}</td><td className="issue">{t.d}<br /><span className="mut">{t.l}</span></td>
                   <td><Select label={`Priority for ${t.id}`} value={t.p} options={['Low', 'Medium', 'High']} onChange={(v) => change(i, 'p', v)} /></td>
                   <td><Select label={`Status for ${t.id}`} value={st(t)} options={STAT} onChange={(v) => change(i, 's', v)} /></td>
                   <td><Select label={`Assignee for ${t.id}`} value={t.a} options={STAFF} onChange={(v) => change(i, 'a', v)} /></td>

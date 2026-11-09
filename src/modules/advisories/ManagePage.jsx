@@ -265,7 +265,7 @@ export default function ManagePage() {
                   <span className="mut">{a.status}{a.location ? ` · ${a.location}` : ''}</span></td>
                 <td>{a.category}</td><td>{a.zones ? a.zones.name : 'All areas'}</td>
                 <td>{dateRange(a.starts_on, a.ends_on)}</td><td>{ago(a.updated_at)}</td>
-                <td className="acts"><Actions a={a} busy={busyRow === a.id} onAct={onAct} /></td>
+                <td className="acts"><div className="acts-in"><Actions a={a} busy={busyRow === a.id} onAct={onAct} /></div></td>
               </tr>
             ))}
           </tbody>

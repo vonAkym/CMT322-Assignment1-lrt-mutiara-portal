@@ -342,6 +342,15 @@ textarea.in { resize: vertical; }
 .tabs button[aria-pressed="true"] span { background: rgba(255, 255, 255, .25); color: inherit; }
 #mok, #merr { margin: 0 0 12px; }
 .acts { white-space: nowrap; text-align: right; }
-.btn.sm { min-height: 36px; padding: 0 12px; font-size: 13px; margin-left: 6px; }
+/* Row buttons: side by side on wide screens, stacked on narrow ones, always 8px apart. */
+.acts-in { display: flex; justify-content: flex-end; gap: 8px; }
+.btn.sm { min-height: 36px; padding: 0 12px; font-size: 13px; }
 .btn.warn { background: var(--sf); color: var(--red); border: 1px solid var(--red); }
-@media (max-width: 860px) { .fgrid, .fgrid2 { grid-template-columns: 1fr; } .acts { white-space: normal; } }
+@media (max-width: 860px) { .fgrid, .fgrid2 { grid-template-columns: 1fr; } .acts { white-space: normal; } .acts-in { flex-wrap: wrap; } }
+
+/* ===== Module 4: ticket table on the admin dashboard ===== */
+/* Each dropdown is as wide as its longest choice, so the whole word always shows. On narrow screens
+   the table scrolls sideways inside its card instead of squeezing the columns. */
+.tickets th, .tickets .tno { white-space: nowrap; }
+.tickets .issue { min-width: 200px; }
+.tickets select.in { width: auto; }
