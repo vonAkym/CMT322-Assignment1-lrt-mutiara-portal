@@ -1,14 +1,14 @@
 // src/modules/admin/tickets.js: ticket search and filters (UC03), counts (UC10), assignee choices (UC06).
 import { describe, expect, it } from 'vitest';
-import { assigneeOptions, countBy, filterTickets, readFilters, reporter, TEAMS } from '../../src/modules/admin/tickets.js';
+import { actionError, assigneeOptions, checkNote, countBy, filterTickets, historyItem, readFilters, reporter, TEAMS } from '../../src/modules/admin/tickets.js';
 
 const T = [
   { id: 1, ticket_no: 'LRT-2026-0001', category: 'Noise', description: 'Piling after 10 pm', location: 'Komtar', reporter_name: 'Ali', status: 'Submitted', priority: 'High', assigned_to: null },
-  { id: 2, ticket_no: 'LRT-2026-0002', category: 'Dust', description: 'Dust on the shop front', location: 'Jalan Sample', reporter_name: null, status: 'In progress', priority: 'Medium', assigned_to: 'Construction Team' },
+  { id: 2, ticket_no: 'LRT-2026-0002', category: 'Dust', description: 'Dust on the shop front', location: 'Jalan Sample', reporter_name: null, status: 'In progress', priority: 'Medium', assigned_to: 'Construction Team', escalated_at: '2026-11-04T02:00:00Z' },
   { id: 3, ticket_no: 'LRT-2026-0003', category: 'Noise', description: 'Generator noise', location: null, reporter_name: 'Mei Ling', status: 'Resolved', priority: 'Low', assigned_to: 'Aisyah' },
 ];
 const ids = (list) => list.map((t) => t.id);
-const none = { q: '', category: '', status: '', priority: '', assigned: '' };
+const none = { q: '', category: '', status: '', priority: '', assigned: '', escalated: '' };
 
 describe('filterTickets', () => {
   it('returns every ticket with no filters', () => { expect(ids(filterTickets(T, none))).toEqual([1, 2, 3]); });
@@ -70,5 +70,28 @@ describe('reporter', () => {
     expect(reporter({ reporter_name: 'Ali', is_anonymous: false })).toBe('Ali');
     expect(reporter({ reporter_name: null, is_anonymous: true })).toBe('Anonymous');
     expect(reporter({ reporter_name: null, is_anonymous: false })).toBe('Not given');
+  });
+});
+
+describe('UC08 and UC09 helpers', () => {
+  it('filters escalated tickets only', () => {
+    expect(ids(filterTickets(T, { ...none, escalated: '1' }))).toEqual([2]);
+  });
+  it('checkNote wants 5 to 1000 characters, not counting spaces at the ends', () => {
+    expect(checkNote('   hi   ', 'reply')).toBe('Write the reply (at least 5 characters).');
+    expect(checkNote('We are on it.', 'reply')).toBe('');
+    expect(checkNote('x'.repeat(1001), 'reason')).toBe('Keep the reason under 1000 characters.');
+  });
+  it('historyItem names each kind of entry', () => {
+    expect(historyItem({ kind: 'status', status: 'Resolved', note: null })).toEqual({ title: 'Resolved', note: null });
+    expect(historyItem({ status: 'Submitted' })).toEqual({ title: 'Submitted', note: undefined }); // before the migration
+    expect(historyItem({ kind: 'reply', status: 'Submitted', note: 'Thanks' })).toEqual({ title: 'Reply to resident', note: 'Thanks' });
+    expect(historyItem({ kind: 'escalated', status: 'Submitted', note: 'Public road' })).toEqual({ title: 'Escalated to the government', note: 'Reason: Public road' });
+  });
+  it('actionError explains a missing database update, a refused action, and anything else', () => {
+    expect(actionError({ code: 'PGRST202', message: 'Could not find the function' }, 'send the reply')).toMatch(/needs the latest update/);
+    expect(actionError({ code: 'P0002', message: 'No such ticket, or it is already escalated' }, 'escalate the ticket'))
+      .toBe('Could not escalate the ticket: No such ticket, or it is already escalated.');
+    expect(actionError(new Error('offline'), 'send the reply')).toBe('Could not send the reply. Please try again.');
   });
 });

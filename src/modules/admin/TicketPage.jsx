@@ -1,10 +1,11 @@
 // Ticket page (UC04): everything about one ticket (description, location, photo, reporter, status history),
-// and the staff controls for it: priority (UC05), assignee (UC06) and status (UC07).
+// and the staff controls for it: priority (UC05), assignee (UC06), status (UC07), a reply the resident
+// reads when tracking the ticket (UC08), and escalation to the government (UC09).
 // Address: #/admin/tickets/LRT-2026-0001
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useParams } from 'react-router';
-import { getTicket, listStaff, ticketPhotoUrl, updateTicket } from './api.js';
-import { PRIORITIES, STATUSES, assigneeOptions, reporter, submittedAt } from './tickets.js';
+import { escalateTicket, getTicket, listStaff, replyToTicket, ticketPhotoUrl, updateTicket } from './api.js';
+import { NOTE_MAX, PRIORITIES, STATUSES, actionError, assigneeOptions, checkNote, historyItem, reporter, submittedAt } from './tickets.js';
 
 const Para = ({ text }) => text.split('\n').map((line, i) => <span key={i}>{i > 0 && <br />}{line}</span>);
 const STATUS_PILL = { 'In progress': 'on', Resolved: 'dn' };
@@ -22,6 +23,36 @@ function Photo({ path, alt }) {
   return <a href={src} target="_blank" rel="noopener"><img className="tphoto" src={src} alt={alt} /></a>;
 }
 
+// A short text box with its own send button, used for the reply (UC08) and the escalation reason (UC09).
+// onSend gets the text; it should throw to show an error. what = 'reply' or 'reason', used in messages.
+function NoteForm({ id, label, help, what, button, busyLabel, onSend, onCancel, warn }) {
+  const [text, setText] = useState('');
+  const [err, setErr] = useState('');
+  const [busy, setBusy] = useState(false);
+  const send = async (e) => {
+    e.preventDefault();
+    const problem = checkNote(text, what);
+    if (problem) { setErr(problem); document.getElementById(id).focus(); return; }
+    setBusy(true); setErr('');
+    try { await onSend(text); setText(''); } catch (ex) { setErr(ex.message); } finally { setBusy(false); }
+  };
+  return (
+    <form className="stack" noValidate onSubmit={send}>
+      <div>
+        <label htmlFor={id}>{label}</label>
+        <textarea id={id} className="in" rows={4} autoFocus={!!onCancel} maxLength={NOTE_MAX} value={text} aria-invalid={!!err}
+          aria-describedby={`${id}-help${err ? ` ${id}-err` : ''}`} onChange={(e) => { setText(e.target.value); if (err) setErr(''); }} />
+        <p className="mut fhelp" id={`${id}-help`}>{help} <span aria-hidden="true">({text.trim().length}/{NOTE_MAX})</span></p>
+        {err && <p className="err" id={`${id}-err`} role="alert">{err}</p>}
+      </div>
+      <div className="ctas" style={{ justifyContent: 'flex-start', margin: 0 }}>
+        <button className={`btn${warn ? ' warn' : ''}`} type="submit" disabled={busy}>{busy ? busyLabel : button}</button>
+        {onCancel && <button className="btn s" type="button" onClick={onCancel} disabled={busy}>Cancel</button>}
+      </div>
+    </form>
+  );
+}
+
 export default function TicketPage() {
   const { no } = useParams();
   const { state } = useLocation();
@@ -33,6 +64,8 @@ export default function TicketPage() {
   const [v, setV] = useState({ priority: '', status: '', assigned_to: '' });
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState(null);
+  const [notice, setNotice] = useState(''); // after a reply or an escalation
+  const [escalating, setEscalating] = useState(false);
 
   const load = async () => {
     try {
@@ -44,7 +77,7 @@ export default function TicketPage() {
     }
   };
   useEffect(() => {
-    setT(undefined); setLoadErr(false); setMsg(null);
+    setT(undefined); setLoadErr(false); setMsg(null); setNotice(''); setEscalating(false);
     load();
     listStaff().then(setStaff, (e) => console.error(e));
   }, [no]);
@@ -83,12 +116,29 @@ export default function TicketPage() {
     }
   };
 
+  // UC08: the reply is saved, then the page reloads so it shows in the history.
+  const reply = async (text) => {
+    setNotice('');
+    try { await replyToTicket(t.id, text); } catch (e) { console.error(e); throw new Error(actionError(e, 'send the reply')); }
+    await load();
+    setNotice('Reply sent. The resident sees it when they track this ticket.');
+  };
+  // UC09: escalating also assigns the ticket to the government officers.
+  const escalate = async (text) => {
+    setNotice('');
+    try { await escalateTicket(t.id, text); } catch (e) { console.error(e); throw new Error(actionError(e, 'escalate the ticket')); }
+    setEscalating(false);
+    await load();
+    setNotice('Ticket escalated to the government officers.');
+  };
+
   const step = STATUSES.indexOf(t.status);
   return (
     <section>
       <p className="tback"><Link to={back}>← All tickets</Link></p>
       <div className="adv-head">
         <p>
+          {t.escalated_at && <><span className="pill esc">Escalated</span> </>}
           {t.priority === 'High' && <><span className="pill hot">High priority</span> </>}
           <span className={`pill ${STATUS_PILL[t.status] || ''}`}>{t.status}</span> <span className="pill">{t.category}</span>
         </p>
@@ -101,12 +151,23 @@ export default function TicketPage() {
           <div className="card"><h2>Photo</h2>
             {t.photo_path ? <Photo path={t.photo_path} alt={`Photo sent with ${t.ticket_no}`} /> : <p className="mut">No photo was sent.</p>}
           </div>
-          <div className="card"><h2>Status history</h2>
+          {notice && <p className="ok" role="status">{notice}</p>}
+          <div className="card"><h2>History</h2>
             <ol className="thist">
-              {t.history.map((h) => (
-                <li key={h.id}><b>{h.status}</b> <span className="mut">· {submittedAt(h.created_at)}</span>{h.note && <><br />{h.note}</>}</li>
-              ))}
+              {t.history.map((h) => {
+                const item = historyItem(h);
+                return (
+                  <li key={h.id} className={h.kind && h.kind !== 'status' ? `k-${h.kind}` : undefined}>
+                    <b>{item.title}</b> <span className="mut">· {submittedAt(h.created_at)}</span>
+                    {item.note && <span className="hnote"><Para text={item.note} /></span>}
+                  </li>
+                );
+              })}
             </ol>
+          </div>
+          <div className="card stack"><h2>Reply to the resident</h2>
+            <NoteForm id="rr" label="Your reply" what="reply" button="Send reply" busyLabel="Sending…" onSend={reply}
+              help="The resident reads this on the Feedback page when they track this ticket, so write it for them." />
           </div>
         </div>
         <aside className="stack">
@@ -136,6 +197,22 @@ export default function TicketPage() {
             <button className="btn" type="submit" style={{ alignSelf: 'flex-start' }} disabled={!changed || saving}>{saving ? 'Saving…' : 'Save changes'}</button>
             {msg && <p className={msg.ok ? 'ok' : 'err'} role={msg.ok ? 'status' : 'alert'}>{msg.text}</p>}
           </form>
+          <div className="card stack"><h2>Escalate to the government</h2>
+            {t.escalated_at ? (
+              <>
+                <p>Escalated on {submittedAt(t.escalated_at)}.</p>
+                {t.escalation_reason && <p className="mut"><b>Reason:</b> <Para text={t.escalation_reason} /></p>}
+              </>
+            ) : escalating ? (
+              <NoteForm id="er" label="Why does this need the government?" what="reason" button="Escalate ticket" busyLabel="Escalating…"
+                help="Only staff see the reason. The ticket is assigned to the Government Officers." warn onSend={escalate} onCancel={() => setEscalating(false)} />
+            ) : (
+              <>
+                <p className="mut">For problems beyond the project team, such as public roads, utilities or enforcement.</p>
+                <button type="button" className="btn warn" style={{ alignSelf: 'flex-start' }} onClick={() => setEscalating(true)}>Escalate…</button>
+              </>
+            )}
+          </div>
         </aside>
       </div>
     </section>

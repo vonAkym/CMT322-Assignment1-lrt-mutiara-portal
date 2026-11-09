@@ -47,3 +47,18 @@ describe('staff list (UC06)', () => {
     expect(fake.filters()).toEqual([['in', 'role', ['admin', 'construction', 'government']], ['order', 'full_name']]);
   });
 });
+
+describe('reply and escalate (UC08, UC09)', () => {
+  it('replyToTicket calls the database function with the trimmed message', async () => {
+    await api.replyToTicket(7, '  We will check tonight.  ');
+    expect(fake.calls[0]).toEqual(['rpc', 'reply_to_ticket', { p_ticket_id: 7, p_message: 'We will check tonight.' }]);
+  });
+  it('escalateTicket calls the database function with the trimmed reason', async () => {
+    await api.escalateTicket(7, ' Public road ');
+    expect(fake.calls[0]).toEqual(['rpc', 'escalate_ticket', { p_ticket_id: 7, p_reason: 'Public road' }]);
+  });
+  it('passes a refusal on', async () => {
+    fake.result = { data: null, error: { code: '42501', message: 'Only staff can reply to tickets' } };
+    await expect(api.replyToTicket(7, 'Hello there')).rejects.toMatchObject({ code: '42501' });
+  });
+});

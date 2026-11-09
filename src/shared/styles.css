@@ -402,3 +402,11 @@ textarea.in { resize: vertical; }
 .thist { margin: 0; padding-left: 20px; display: grid; gap: 10px; }
 @media (prefers-reduced-motion: reduce) { .stat { transition: none; } }
 @media (max-width: 560px) { .stats .stat:first-child { grid-column: 1 / -1; } }
+
+/* Module 4: replies (UC08) and escalation (UC09) in the ticket history, on the ticket page and the Feedback page. */
+.pill.esc { background: var(--gold); color: #0C3B2E; }
+.thist li.k-reply, .thist li.k-escalated { list-style: none; margin-left: -20px; padding: 10px 14px; border-radius: 12px; background: var(--plbg); }
+.thist li.k-escalated { background: var(--warnbg); color: var(--warntx); }
+.hnote { display: block; margin-top: 4px; white-space: pre-line; }
+.fhelp { font-size: 13px; margin: 6px 0 0; }
+.tickets .pill { margin-top: 4px; }

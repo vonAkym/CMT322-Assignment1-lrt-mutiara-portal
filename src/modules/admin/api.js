@@ -13,8 +13,8 @@ export async function myProfile() {
 }
 
 // ---------- Tickets (staff only: the database returns nothing to anyone else) ----------
-const TICKET = 'id, ticket_no, category, description, location, photo_path, reporter_name, is_anonymous, ' +
-  'status, priority, assigned_to, created_at';
+// Every column, so the pages keep working whether or not the newest migration (escalation) has been run.
+const TICKET = '*';
 
 // UC02: every ticket, newest first. Searching and filtering (UC03) happen in the page, so they are instant.
 export const listTickets = async () =>
@@ -24,7 +24,7 @@ export const listTickets = async () =>
 export async function getTicket(ticketNo) {
   const t = ok(await sb.from('tickets').select(TICKET).eq('ticket_no', ticketNo).maybeSingle());
   if (!t) return null;
-  const history = ok(await sb.from('ticket_events').select('id, status, note, created_at')
+  const history = ok(await sb.from('ticket_events').select('*')
     .eq('ticket_id', t.id).order('created_at', { ascending: true }));
   return { ...t, history };
 }
@@ -33,6 +33,15 @@ export async function getTicket(ticketNo) {
 // A status change is added to the history by the database itself (trigger tickets_log).
 export const updateTicket = async (id, changes) =>
   ok(await sb.from('tickets').update(changes).eq('id', id).select(TICKET).single());
+
+// UC08: a reply the resident sees when tracking the ticket (5 to 1000 characters). Returns the history entry.
+export const replyToTicket = async (id, message) =>
+  ok(await sb.rpc('reply_to_ticket', { p_ticket_id: id, p_message: message.trim() }));
+
+// UC09: hands the ticket to the government officers. The reason stays with staff; the resident only sees
+// that it was passed on. Returns the updated ticket.
+export const escalateTicket = async (id, reason) =>
+  ok(await sb.rpc('escalate_ticket', { p_ticket_id: id, p_reason: reason.trim() }));
 
 // Ticket photos are private. Staff get a link that works for one hour.
 export async function ticketPhotoUrl(path) {

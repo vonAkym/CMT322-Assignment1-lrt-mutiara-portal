@@ -131,3 +131,27 @@ describe('Feedback: track a ticket', () => {
     expect(api.trackTicket).not.toHaveBeenCalled();
   });
 });
+
+describe('Feedback: replies and escalation from staff (Module 4, UC08 and UC09)', () => {
+  it('shows the team reply and that the concern went to the government, never the internal reason', async () => {
+    api.trackTicket.mockResolvedValue({
+      ticket_no: 'LRT-2026-0005', category: 'Road damage', location: 'Jalan A', status: 'Under review', assigned_to: 'Government Officers', escalated: true,
+      history: [
+        { status: 'Submitted', at: '2026-11-01T02:00:00Z', kind: 'status', note: null },
+        { status: 'Submitted', at: '2026-11-02T02:00:00Z', kind: 'reply', note: 'Thanks, we have passed this on.' },
+        { status: 'Submitted', at: '2026-11-02T03:00:00Z', kind: 'escalated', note: null },
+      ],
+    });
+    renderPage(<TrackPage />, { path: '/track', at: '/track?ticket=LRT-2026-0005' });
+    expect(await screen.findByText('Reply from the team')).toBeInTheDocument();
+    expect(screen.getByText('Thanks, we have passed this on.')).toBeInTheDocument();
+    expect(screen.getByText('Passed to the government officers')).toBeInTheDocument();
+    expect(screen.getByText('This concern has been passed to the government officers.')).toBeInTheDocument();
+  });
+  it('still shows tickets from before replies existed (no kind in the history)', async () => {
+    api.trackTicket.mockResolvedValue({ ticket_no: 'LRT-2026-0006', category: 'Noise', location: null, status: 'Submitted', assigned_to: null, history: [{ status: 'Submitted', at: '2026-11-01T02:00:00Z' }] });
+    renderPage(<TrackPage />, { path: '/track', at: '/track?ticket=LRT-2026-0006' });
+    expect(await screen.findByRole('heading', { name: 'LRT-2026-0006' })).toBeInTheDocument();
+    expect(screen.getAllByText('Submitted').length).toBeGreaterThan(1);
+  });
+});

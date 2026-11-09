@@ -32,11 +32,13 @@ Free projects pause after about 7 days with no activity. Open the project or the
 1. Open **SQL Editor, New query**.
 2. Paste all of `supabase/migrations/20261028000000_init.sql` and click **Run**.
 3. New query again. Paste `supabase/migrations/20261108000000_advisories.sql` (Module 1 advisories) and click **Run**.
-4. New query again. Paste `supabase/seed.sql` and click **Run**.
-5. New query again. Paste `supabase/seed_advisories.sql` and click **Run**. You can run this one again any time to reset the sample advisories.
-6. Open **Table Editor**. You should see zones, updates, map_features, tickets and the others.
+4. New query again. Paste `supabase/migrations/20261110000000_ticket_replies.sql` (Module 4 replies and escalation) and click **Run**.
+5. New query again. Paste `supabase/seed.sql` and click **Run**.
+6. New query again. Paste `supabase/seed_advisories.sql` and click **Run**. You can run this one again any time to reset the sample advisories.
+7. Open **Table Editor**. You should see zones, updates, map_features, tickets and the others.
 
-**Already set up before the advisories migration?** Run only steps 3 and 5.
+**Already set up before the advisories migration?** Run only steps 3, 4 and 6.
+**Already set up before the replies migration?** Run only step 4. Until it runs, the site still works, but sending a reply or escalating a ticket says the database needs the latest update.
 
 ### Staff features without signing in (no longer needed)
 
@@ -82,7 +84,7 @@ Each module has its own folder in `src/modules/`. Inside it, `api.js` holds that
 | 1. Advisories | `advisories/` | Home, Advisories, advisory detail, Schedule, My advisories, urgent banner | `listAdvisories()`, `getAdvisory()`, `hubSummary()`, `listUrgent()`, `listSchedule()`, `listMyAdvisories()`, `saveAdvisory()`, `publishAdvisory()`, `endAdvisory()`, `uploadAdvisoryPhoto()`, `subscribeToZone()` | Sending the zone alert emails (needs a mail service; sign-ups are already saved) |
 | 2. Map | `map/` | Map | `listMapFeatures()` | Replace the sample `M` list in `MapPage.jsx` |
 | 3. Complaints | `complaints/` | Report, Feedback | `submitTicket()`, `trackTicket()` | Done |
-| 4. Admin | `admin/` | Staff sign in, Admin dashboard (ticket list, filters, counts), ticket page | `signIn()`, `signOut()`, `myProfile()`, `listTickets()`, `getTicket()`, `updateTicket()`, `ticketPhotoUrl()`, `listStaff()` | Reply to resident (UC08), escalate (UC09), zone and response-time figures (UC10), export (UC11), staff roles (UC12) |
+| 4. Admin | `admin/` | Staff sign in, Admin dashboard (ticket list, filters, counts), ticket page (reply, escalate) | `signIn()`, `signOut()`, `myProfile()`, `listTickets()`, `getTicket()`, `updateTicket()`, `ticketPhotoUrl()`, `listStaff()`, `replyToTicket()`, `escalateTicket()` | Zone and response-time figures (UC10), export (UC11), staff roles (UC12) |
 
 `listZones()` is shared and lives in `src/shared/supabase.js`; the `ZoneSelect` dropdown uses it.
 

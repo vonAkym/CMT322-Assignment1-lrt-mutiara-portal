@@ -1,5 +1,5 @@
 // Operational dashboard (Module 4): every complaint ticket from the database.
-// UC02 view the list, UC03 search and filter it, UC05 to UC07 set priority, assignee and status straight from the list,
+// UC02 view the list, UC03 search and filter it (including escalated tickets, UC09), UC05 to UC07 set priority, assignee and status straight from the list,
 // UC10 (first part) counts by status and category. Selecting a ticket number opens its page (UC04).
 // The filters live in the address (e.g. #/admin?status=Submitted), so the back button and refresh keep them.
 import { useEffect, useState } from 'react';
@@ -123,6 +123,7 @@ export default function AdminPage() {
                 {people.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
               </select></div>
           </div>
+          <label className="chk"><input type="checkbox" checked={!!f.escalated} onChange={(e) => setFilter('escalated', e.target.checked ? '1' : '')} /> Escalated to the government only</label>
           {filtered && <button type="button" className="btn s sm" style={{ alignSelf: 'flex-start' }} onClick={() => { setQ(''); setParams({}, { replace: true }); }}>Clear filters</button>}
         </div>
 
@@ -140,7 +141,8 @@ export default function AdminPage() {
                 <tbody>
                   {shown.map((t) => (
                     <tr key={t.id} className={t.priority === 'High' && t.status !== 'Resolved' ? 'hi' : undefined}>
-                      <td className="tno"><Link to={`/admin/tickets/${t.ticket_no}`} state={{ back: search }}>{t.ticket_no}</Link></td>
+                      <td className="tno"><Link to={`/admin/tickets/${t.ticket_no}`} state={{ back: search }}>{t.ticket_no}</Link>
+                        {t.escalated_at && <><br /><span className="pill esc">Escalated</span></>}</td>
                       <td>{t.category}</td>
                       <td className="issue">{t.description}<br /><span className="mut">{t.location || 'No location given'}</span></td>
                       <td className="when">{submittedAt(t.created_at)}</td>

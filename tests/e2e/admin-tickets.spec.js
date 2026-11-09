@@ -77,6 +77,35 @@ test('the ticket page shows the details and saves changes with a new history ent
   void errors;
 });
 
+test('a reply to the resident is checked, sent and added to the history (UC08)', async ({ page, errors }) => {
+  await page.getByRole('link', { name: 'LRT-2026-0001' }).click();
+  await page.getByRole('button', { name: 'Send reply' }).click();
+  await expect(page.getByText('Write the reply (at least 5 characters).')).toBeVisible();
+  await page.getByLabel('Your reply').fill('We have asked the contractor to stop piling at 10 pm.');
+  await page.getByRole('button', { name: 'Send reply' }).click();
+  await expect(page.getByText('Reply sent. The resident sees it when they track this ticket.')).toBeVisible();
+  await expect(page.locator('.thist li.k-reply')).toContainText('We have asked the contractor to stop piling at 10 pm.');
+  expect(saved.events.at(-1)).toMatchObject({ ticket_id: 1, kind: 'reply' });
+  void errors;
+});
+
+test('escalating asks for a reason, then marks the ticket on the page and the dashboard (UC09)', async ({ page, errors }) => {
+  await page.getByRole('link', { name: 'LRT-2026-0001' }).click();
+  await page.getByRole('button', { name: 'Escalate…' }).click();
+  await page.getByLabel('Why does this need the government?').fill('The damaged drain belongs to the city council.');
+  await page.getByRole('button', { name: 'Escalate ticket' }).click();
+  await expect(page.getByText('Ticket escalated to the government officers.')).toBeVisible();
+  await expect(page.getByText(/Escalated on/)).toBeVisible();
+  await expect(page.locator('.facts')).toContainText('Government Officers');
+  await expect(page.locator('.thist li.k-escalated')).toContainText('The damaged drain belongs to the city council.');
+
+  await page.getByRole('link', { name: '← All tickets' }).click();
+  await page.getByLabel('Escalated to the government only').check();
+  await expect(rows(page)).toHaveCount(1);
+  await expect(rows(page).first()).toContainText('Escalated');
+  void errors;
+});
+
 test('an anonymous ticket says so', async ({ page }) => {
   await page.getByRole('link', { name: 'LRT-2026-0002' }).click();
   await expect(page.locator('.facts')).toContainText('Anonymous');

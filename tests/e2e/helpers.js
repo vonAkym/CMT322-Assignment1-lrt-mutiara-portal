@@ -89,5 +89,23 @@ export async function fakeTickets(page, tickets) {
   });
   await page.route('**/rest/v1/ticket_events*', (r) =>
     r.fulfill({ json: events.filter((e) => String(e.ticket_id) === param(r.request().url(), 'ticket_id')) }));
+  // UC08 and UC09: the two database functions from migration 20261110000000_ticket_replies.sql.
+  const addEvent = (t, kind, note) => {
+    const e = { id: events.length + 1, ticket_id: t.id, status: t.status, kind, note, created_at: new Date().toISOString() };
+    events.push(e);
+    return e;
+  };
+  await page.route('**/rest/v1/rpc/reply_to_ticket', (r) => {
+    const { p_ticket_id: id, p_message: note } = r.request().postDataJSON();
+    return r.fulfill({ json: addEvent(rows.find((x) => x.id === id), 'reply', note) });
+  });
+  await page.route('**/rest/v1/rpc/escalate_ticket', (r) => {
+    const { p_ticket_id: id, p_reason: reason } = r.request().postDataJSON();
+    const t = rows.find((x) => x.id === id);
+    Object.assign(t, { escalated_at: new Date().toISOString(), escalation_reason: reason, assigned_to: 'Government Officers' });
+    addEvent(t, 'escalated', reason);
+    return r.fulfill({ json: t });
+  });
+  rows.events = events;
   return rows;
 }

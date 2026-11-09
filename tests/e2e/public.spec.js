@@ -147,6 +147,25 @@ test.describe('Module 3: report and track', () => {
     void errors;
   });
 
+  test('tracking shows the team’s reply and that the concern went to the government (faked answer)', async ({ page, errors }) => {
+    await fakeWrites(page, {
+      track: {
+        ticket_no: 'LRT-2099-0002', category: 'Road damage', location: 'Jalan A', status: 'Under review', assigned_to: 'Government Officers', escalated: true,
+        history: [
+          { status: 'Submitted', at: '2026-11-01T02:00:00Z', kind: 'status', note: null },
+          { status: 'Under review', at: '2026-11-02T02:00:00Z', kind: 'status', note: null },
+          { status: 'Under review', at: '2026-11-02T03:00:00Z', kind: 'reply', note: 'Thanks. The drain is the council’s, so we have passed this on.' },
+          { status: 'Under review', at: '2026-11-02T03:05:00Z', kind: 'escalated', note: null },
+        ],
+      },
+    });
+    await open(page, '/track?ticket=LRT-2099-0002');
+    await expect(page.getByText('Reply from the team')).toBeVisible();
+    await expect(page.getByText('Thanks. The drain is the council’s, so we have passed this on.')).toBeVisible();
+    await expect(page.getByText('This concern has been passed to the government officers.')).toBeVisible();
+    void errors;
+  });
+
   test('tracking an unknown ticket says so (real database)', async ({ page, errors }) => {
     await open(page, '/track');
     await page.getByLabel('Ticket number').fill('LRT-1900-9999');

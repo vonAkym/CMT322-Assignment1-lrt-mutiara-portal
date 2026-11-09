@@ -5,6 +5,7 @@ import { renderPage } from './helpers/render.jsx';
 
 vi.mock('../../src/modules/admin/api.js', () => ({
   listTickets: vi.fn(), getTicket: vi.fn(), updateTicket: vi.fn(), listStaff: vi.fn(), ticketPhotoUrl: vi.fn(),
+  replyToTicket: vi.fn(), escalateTicket: vi.fn(),
   myProfile: vi.fn(), signIn: vi.fn(), signOut: vi.fn(),
 }));
 const api = await import('../../src/modules/admin/api.js');
@@ -18,7 +19,7 @@ const ticket = (o) => ({
 });
 const TICKETS = [
   ticket({ id: 1 }),
-  ticket({ id: 2, ticket_no: 'LRT-2026-0002', category: 'Dust', description: 'Dust on cars', status: 'In progress', priority: 'High', assigned_to: 'Construction Team' }),
+  ticket({ id: 2, ticket_no: 'LRT-2026-0002', category: 'Dust', description: 'Dust on cars', status: 'In progress', priority: 'High', assigned_to: 'Construction Team', escalated_at: '2026-11-04T02:00:00Z' }),
   ticket({ id: 3, ticket_no: 'LRT-2026-0003', category: 'Noise', description: 'Generator', status: 'Resolved', priority: 'Low' }),
 ];
 const STAFF = [{ id: 'a', full_name: 'Aisyah', role: 'admin' }];
@@ -249,5 +250,91 @@ describe('ticket page (UC04 to UC07)', () => {
     api.ticketPhotoUrl.mockRejectedValue(new Error('denied'));
     open();
     expect(await screen.findByText('The photo could not be loaded.')).toBeInTheDocument();
+  });
+});
+
+describe('dashboard: escalated tickets (UC09)', () => {
+  it('marks escalated tickets and can show only those', async () => {
+    const { user } = dashboard();
+    await screen.findByRole('link', { name: 'LRT-2026-0002' });
+    expect(within(rows()[1]).getByText('Escalated')).toBeInTheDocument();
+    expect(within(rows()[0]).queryByText('Escalated')).not.toBeInTheDocument();
+    await user.click(screen.getByLabelText('Escalated to the government only'));
+    expect(rows()).toHaveLength(1);
+    expect(screen.getByTestId('where')).toHaveTextContent('escalated=1');
+  });
+});
+
+describe('ticket page: reply to resident (UC08)', () => {
+  const BASE = ticket({ history: [{ id: 10, kind: 'status', status: 'Submitted', note: null, created_at: '2026-11-01T02:00:00Z' }] });
+  const open = () => renderPage(<TicketPage />, { path: '/admin/tickets/:no', at: '/admin/tickets/LRT-2026-0001', others: ['/admin'] });
+
+  it('checks the reply, sends it, and shows it in the history', async () => {
+    api.getTicket.mockResolvedValueOnce(BASE).mockResolvedValueOnce({
+      ...BASE, history: [...BASE.history, { id: 11, kind: 'reply', status: 'Submitted', note: 'We will stop work at 10 pm.', created_at: '2026-11-02T02:00:00Z' }],
+    });
+    api.replyToTicket.mockResolvedValue({});
+    const { user } = open();
+    const box = await screen.findByLabelText('Your reply');
+    await user.click(screen.getByRole('button', { name: 'Send reply' }));
+    expect(screen.getByRole('alert')).toHaveTextContent('Write the reply (at least 5 characters).');
+    expect(box).toHaveFocus();
+    expect(api.replyToTicket).not.toHaveBeenCalled();
+    await user.type(box, 'We will stop work at 10 pm.');
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Send reply' }));
+    expect(api.replyToTicket).toHaveBeenCalledWith(1, 'We will stop work at 10 pm.');
+    expect(await screen.findByText('Reply sent. The resident sees it when they track this ticket.')).toBeInTheDocument();
+    expect(screen.getByText('Reply to resident')).toBeInTheDocument();
+    expect(screen.getByText('We will stop work at 10 pm.')).toBeInTheDocument();
+    expect(screen.getByLabelText('Your reply')).toHaveValue('');
+  });
+
+  it('explains when the database has not been updated yet, and keeps the text', async () => {
+    api.getTicket.mockResolvedValue(BASE);
+    api.replyToTicket.mockRejectedValue({ code: 'PGRST202', message: 'Could not find the function public.reply_to_ticket' });
+    const { user } = open();
+    await user.type(await screen.findByLabelText('Your reply'), 'We are on it.');
+    await user.click(screen.getByRole('button', { name: 'Send reply' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('the database needs the latest update');
+    expect(screen.getByLabelText('Your reply')).toHaveValue('We are on it.');
+  });
+});
+
+describe('ticket page: escalate (UC09)', () => {
+  const BASE = ticket({ history: [{ id: 10, kind: 'status', status: 'Submitted', note: null, created_at: '2026-11-01T02:00:00Z' }] });
+  const open = () => renderPage(<TicketPage />, { path: '/admin/tickets/:no', at: '/admin/tickets/LRT-2026-0001', others: ['/admin'] });
+
+  it('asks for a reason, can be cancelled, then escalates', async () => {
+    api.getTicket.mockResolvedValueOnce(BASE).mockResolvedValueOnce({
+      ...BASE, escalated_at: '2026-11-02T02:00:00Z', escalation_reason: 'Drain belongs to the council.', assigned_to: 'Government Officers',
+      history: [...BASE.history, { id: 11, kind: 'escalated', status: 'Submitted', note: 'Drain belongs to the council.', created_at: '2026-11-02T02:00:00Z' }],
+    });
+    api.escalateTicket.mockResolvedValue({});
+    const { user } = open();
+    await user.click(await screen.findByRole('button', { name: /^Escalate/ }));
+    const reason = screen.getByLabelText('Why does this need the government?');
+    expect(reason).toHaveFocus();
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(screen.queryByLabelText('Why does this need the government?')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /^Escalate/ }));
+    await user.click(screen.getByRole('button', { name: 'Escalate ticket' }));
+    expect(screen.getByRole('alert')).toHaveTextContent('Write the reason');
+    await user.type(screen.getByLabelText('Why does this need the government?'), 'Drain belongs to the council.');
+    await user.click(screen.getByRole('button', { name: 'Escalate ticket' }));
+    expect(api.escalateTicket).toHaveBeenCalledWith(1, 'Drain belongs to the council.');
+    expect(await screen.findByText('Ticket escalated to the government officers.')).toBeInTheDocument();
+    expect(screen.getByText('Escalated to the government')).toBeInTheDocument();
+    expect(screen.getByText(/Escalated on/)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^Escalate/ })).not.toBeInTheDocument();
+  });
+
+  it('an escalated ticket shows when and why instead of the button', async () => {
+    api.getTicket.mockResolvedValue({ ...BASE, escalated_at: '2026-11-02T02:00:00Z', escalation_reason: 'Public road.' });
+    open();
+    expect(await screen.findByText(/Escalated on/)).toBeInTheDocument();
+    expect(screen.getByText('Public road.')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^Escalate/ })).not.toBeInTheDocument();
   });
 });
