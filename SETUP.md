@@ -75,7 +75,7 @@ Each module has its own folder in `src/modules/`. Inside it, `api.js` holds that
 
 | Module | Folder | Pages | Database calls (`api.js`) | Still to do |
 | --- | --- | --- | --- | --- |
-| 1. Advisories | `advisories/` | Home, Advisories, advisory detail, Schedule, My advisories, urgent banner | `listAdvisories()`, `getAdvisory()`, `hubSummary()`, `listUrgent()`, `listSchedule()`, `listMyAdvisories()`, `saveAdvisory()`, `publishAdvisory()`, `endAdvisory()`, `uploadAdvisoryPhoto()` | Zone alerts: use `subscribeToZone(zoneId, email)` instead of the confirmation message |
+| 1. Advisories | `advisories/` | Home, Advisories, advisory detail, Schedule, My advisories, urgent banner | `listAdvisories()`, `getAdvisory()`, `hubSummary()`, `listUrgent()`, `listSchedule()`, `listMyAdvisories()`, `saveAdvisory()`, `publishAdvisory()`, `endAdvisory()`, `uploadAdvisoryPhoto()`, `subscribeToZone()` | Sending the zone alert emails (needs a mail service; sign-ups are already saved) |
 | 2. Map | `map/` | Map | `listMapFeatures()` | Replace the sample `M` list in `MapPage.jsx` |
 | 3. Complaints | `complaints/` | Report, Feedback | `submitTicket()`, `trackTicket()` | Done |
 | 4. Admin | `admin/` | Admin dashboard | `signIn()`, `signOut()`, `myProfile()`, `listTickets()`, `updateTicket()` | Replace the simulated sign-in in `src/shared/staff.jsx` and the sample tickets in `AdminPage.jsx` |

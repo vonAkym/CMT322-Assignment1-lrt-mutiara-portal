@@ -10,12 +10,20 @@ const ADVISORY = 'id, title, body, category, status, severity, state, location, 
 export const photoUrl = (path) =>
   /^(https?:|assets\/)/.test(path) ? path : sb.storage.from('update-photos').getPublicUrl(path).data.publicUrl;
 
-// UC03: published advisories (or the ended archive), most recently updated first.
+// An advisory is over when staff end it (UC08), or by itself once its end date has passed, so the public never
+// sees finished works as current even if nobody pressed End. Overdue ones still need ending by staff.
+export const isOverdue = (a) => a.state === 'Published' && !!a.ends_on && a.ends_on < todayISO();
+export const isOver = (a) => a.state === 'Ended' || isOverdue(a);
+
+// UC03: current advisories (or the ended archive), most recently updated first.
+// Current = published and not past the end date. Archive = ended, or published but past the end date.
 // onDate keeps only advisories whose works cover that day.
 export async function listAdvisories({ q, zoneId, category, status, severity, onDate, ended = false, limit } = {}) {
-  let r = sb.from('updates').select(ADVISORY)
-    .eq('state', ended ? 'Ended' : 'Published')
-    .order('updated_at', { ascending: false });
+  const today = todayISO();
+  let r = sb.from('updates').select(ADVISORY).order('updated_at', { ascending: false });
+  r = ended
+    ? r.or(`state.eq.Ended,and(state.eq.Published,ends_on.lt.${today})`)
+    : r.eq('state', 'Published').or(`ends_on.is.null,ends_on.gte.${today}`);
   if (zoneId) r = r.eq('zone_id', zoneId);
   if (category) r = r.eq('category', category);
   if (status) r = r.eq('status', status);
@@ -59,8 +67,17 @@ export async function listSchedule({ zoneId } = {}) {
   return ok(await r);
 }
 
-export const subscribeToZone = async (zoneId, email) =>
-  ok(await sb.from('subscriptions').insert({ zone_id: zoneId, email }));
+// Zone alerts: the same check the database makes on subscriptions.email.
+export const isEmail = (s) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(s).trim());
+
+// Zone alerts: saves an email for one area. Returns 'added', or 'already' when that email already follows the area
+// (the table allows each pair once; visitors cannot read the list back, only staff can).
+export async function subscribeToZone(zoneId, email) {
+  const { error } = await sb.from('subscriptions').insert({ zone_id: +zoneId, email: String(email).trim().toLowerCase() });
+  if (!error) return 'added';
+  if (error.code === '23505') return 'already';
+  throw error;
+}
 
 // ---------- Staff only (UC06 to UC08) ----------
 // Until staff sign-in exists, the database refuses these unless supabase/dev/demo_without_signin.sql was run.
