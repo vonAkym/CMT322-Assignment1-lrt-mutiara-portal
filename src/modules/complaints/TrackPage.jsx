@@ -1,4 +1,5 @@
-// Feedback page: looks up a ticket number in the database and shows its progress.
+// Feedback page: looks up a ticket number in the database and shows its progress,
+// the team's replies (Module 4, UC08) and whether it was passed to the government (UC09).
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { STAT, when } from '../../shared/util.js';
@@ -58,8 +59,17 @@ export default function TrackPage() {
                 <div className={`step${k <= i ? ' d' : ''}`} key={s}><i /><span style={k === i ? { fontWeight: 600 } : undefined}>{s}</span></div>
               ))}
             </div>
+            {t.escalated && <p className="note">This concern has been passed to the government officers.</p>}
             <h3>History</h3>
-            <p className="mut">{t.history.map((h, k) => <span key={k}>{k > 0 && <br />}{h.status} · {when(h.at)}</span>)}</p>
+            <ol className="thist">
+              {t.history.map((h, k) => (
+                <li key={k} className={h.kind === 'reply' ? 'k-reply' : undefined}>
+                  <b>{h.kind === 'reply' ? 'Reply from the team' : h.kind === 'escalated' ? 'Passed to the government officers' : h.status}</b>
+                  {' '}<span className="mut">· {when(h.at)}</span>
+                  {h.kind === 'reply' && h.note && <span className="hnote">{h.note}</span>}
+                </li>
+              ))}
+            </ol>
           </div>
         )}
       </div>

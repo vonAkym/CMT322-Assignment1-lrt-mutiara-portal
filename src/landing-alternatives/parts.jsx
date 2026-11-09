@@ -79,7 +79,7 @@ const LINKS = [['/advisories', 'Updates'], ['/map', 'Map'], ['/report', 'Report'
 
 export function LandingNav({ logo }) {
   const navigate = useNavigate();
-  const { setStaff } = useStaff();
+  const { staff } = useStaff();
   const [open, setOpen] = useState(false);
   const reduced = useReducedMotion();
 
@@ -91,7 +91,7 @@ export function LandingNav({ logo }) {
   }, [open]);
 
   const faq = () => { setOpen(false); document.getElementById('lp-faq')?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' }); };
-  const signIn = () => { setStaff(true); navigate('/admin'); };
+  const signIn = () => navigate(staff ? '/admin' : '/login');
 
   return (
     <header className="lp-nav">

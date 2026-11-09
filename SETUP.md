@@ -32,17 +32,19 @@ Free projects pause after about 7 days with no activity. Open the project or the
 1. Open **SQL Editor, New query**.
 2. Paste all of `supabase/migrations/20261028000000_init.sql` and click **Run**.
 3. New query again. Paste `supabase/migrations/20261108000000_advisories.sql` (Module 1 advisories) and click **Run**.
-4. New query again. Paste `supabase/seed.sql` and click **Run**.
-5. New query again. Paste `supabase/seed_advisories.sql` and click **Run**. You can run this one again any time to reset the sample advisories.
-6. Open **Table Editor**. You should see zones, updates, map_features, tickets and the others.
+4. New query again. Paste `supabase/migrations/20261110000000_ticket_replies.sql` (Module 4 replies and escalation) and click **Run**.
+5. New query again. Paste `supabase/seed.sql` and click **Run**.
+6. New query again. Paste `supabase/seed_advisories.sql` and click **Run**. You can run this one again any time to reset the sample advisories.
+7. Open **Table Editor**. You should see zones, updates, map_features, tickets and the others.
 
-**Already set up before the advisories migration?** Run only steps 3 and 5.
+**Already set up before the advisories migration?** Run only steps 3, 4 and 6.
+**Already set up before the replies migration?** Run only step 4. Until it runs, the site still works, but sending a reply or escalating a ticket says the database needs the latest update.
 
-### Trying staff features before sign-in exists (optional)
+### Staff features without signing in (no longer needed)
 
-Posting, editing and ending advisories (UC06 to UC08) need a signed-in staff account. Until sign-in is built, run
-`supabase/dev/demo_without_signin.sql` to let the site save without signing in. While it is on, **anyone** with the site
-can change advisories, so turn it off with `supabase/dev/undo_demo_without_signin.sql` once sign-in works or the demo is over.
+Staff sign-in now works (section 5), so posting, editing and ending advisories (UC06 to UC08) only need a staff account.
+If `supabase/dev/demo_without_signin.sql` was ever run on your project, run `supabase/dev/undo_demo_without_signin.sql`:
+while the demo rules are on, **anyone** with the site can change advisories.
 
 ## 4. Run the site on your PC
 
@@ -59,7 +61,7 @@ Pushing to `main` starts the workflow in `.github/workflows/deploy.yml`, which r
 
 ## 5. Create your staff account
 
-1. Open the site's sign-in later (module 4), or use **Authentication, Users, Add user** in the dashboard. Tick "Auto Confirm User".
+1. In the Supabase dashboard, open **Authentication, Users, Add user, Create new user**. Enter the email and a password, and tick "Auto Confirm User". The site has no public sign-up page: staff accounts are only made here.
 2. In **SQL Editor** run, with your email:
 
 ```sql
@@ -67,7 +69,11 @@ update public.profiles set role = 'admin'
 where id = (select id from auth.users where email = 'you@example.com');
 ```
 
-Only staff roles can read tickets, change ticket status and post updates. Everyone else gets nothing back, because of the Row Level Security rules in the schema.
+Use `'construction'` or `'government'` instead of `'admin'` for the other staff roles.
+
+3. On the site, click **Sign in** and use that email and password. You land on the admin dashboard, and the header shows **My advisories** and **Admin**. You stay signed in on that browser until you click **Sign out**.
+
+Only staff roles can sign in, read tickets, change ticket status and post updates. An account with the default role (`resident`) is refused at sign-in, and the Row Level Security rules in the schema give it nothing back either way.
 
 ## 6. Where each module's code lives
 
@@ -78,11 +84,11 @@ Each module has its own folder in `src/modules/`. Inside it, `api.js` holds that
 | 1. Advisories | `advisories/` | Home, Advisories, advisory detail, Schedule, My advisories, urgent banner | `listAdvisories()`, `getAdvisory()`, `hubSummary()`, `listUrgent()`, `listSchedule()`, `listMyAdvisories()`, `saveAdvisory()`, `publishAdvisory()`, `endAdvisory()`, `uploadAdvisoryPhoto()`, `subscribeToZone()` | Sending the zone alert emails (needs a mail service; sign-ups are already saved) |
 | 2. Map | `map/` | Map | `listMapFeatures()` | Replace the sample `M` list in `MapPage.jsx` |
 | 3. Complaints | `complaints/` | Report, Feedback | `submitTicket()`, `trackTicket()` | Done |
-| 4. Admin | `admin/` | Admin dashboard | `signIn()`, `signOut()`, `myProfile()`, `listTickets()`, `updateTicket()` | Replace the simulated sign-in in `src/shared/staff.jsx` and the sample tickets in `AdminPage.jsx` |
+| 4. Admin | `admin/` | Staff sign in, Admin dashboard (ticket list, filters, counts), ticket page (reply, escalate) | `signIn()`, `signOut()`, `myProfile()`, `listTickets()`, `getTicket()`, `updateTicket()`, `ticketPhotoUrl()`, `listStaff()`, `replyToTicket()`, `escalateTicket()` | Zone and response-time figures (UC10), export (UC11), staff roles (UC12) |
 
 `listZones()` is shared and lives in `src/shared/supabase.js`; the `ZoneSelect` dropdown uses it.
 
-To add a page: create the `.jsx` file in your module's folder and add one line to that module's `routes.jsx`. Use `staff: true` for staff-only pages. Link to other pages with `<Link to="/address">` from `react-router`.
+To add a page: create the `.jsx` file in your module's folder and add one line to that module's `routes.jsx`. Use `staff: true` for staff-only pages: visitors who are not signed in as staff are sent to the sign-in page. In a page, `useStaff()` from `src/shared/staff.jsx` gives `{ staff, profile, signOut }`. Link to other pages with `<Link to="/address">` from `react-router`.
 
 ## 7. Suggested order of work (split among 4 members)
 
