@@ -11,7 +11,7 @@ const STAFF_MENU = [['/manage', 'My advisories'], ['/admin', 'Admin']];
 const Brand = () => <Link className="brand" to="/" aria-label="MutiaraInfo, home"><Logo /></Link>;
 
 export default function Layout() {
-  const { staff, setStaff } = useStaff();
+  const { staff, signOut } = useStaff();
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [open, setOpen] = useState(false); // the menu on small screens
@@ -26,8 +26,12 @@ export default function Layout() {
     return () => window.removeEventListener('keydown', esc);
   }, [open]);
 
-  // Simulated sign-in: shows or hides the staff pages.
-  const toggleSignIn = () => { setStaff(!staff); navigate(staff ? '/' : '/admin'); };
+  // Sign in opens the sign-in page; Sign out ends the session and goes home.
+  const toggleSignIn = async () => {
+    if (!staff) { navigate('/login'); return; }
+    try { await signOut(); } catch (e) { console.error(e); }
+    navigate('/');
+  };
 
   return (
     <>
