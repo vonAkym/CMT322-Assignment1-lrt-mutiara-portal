@@ -95,7 +95,16 @@ export default function ManagePage() {
     setAdded([]); setKept([]); setEditing(null); setOpen(false);
   };
 
-  const field = (k) => ({ value: v[k], onChange: (e) => setV({ ...v, [k]: e.target.value }) });
+  // Every change re-checks the fields that already show an error, so an error goes away as soon as it is fixed
+  // (changing the start date can also fix the end date). Other fields are only checked on Save or Publish.
+  const change = (next) => {
+    setV(next);
+    setErrs((old) => {
+      const now = validate(next);
+      return Object.fromEntries(Object.keys(old).filter((k) => now[k]).map((k) => [k, now[k]]));
+    });
+  };
+  const field = (k) => ({ value: v[k], onChange: (e) => change({ ...v, [k]: e.target.value }) });
 
   const addPhotos = (e) => {
     const problems = new Set(), next = [...added];
@@ -197,7 +206,7 @@ export default function ManagePage() {
           <div><label htmlFor="mt">Title</label><input id="mt" className="in" maxLength={150} placeholder="e.g. Lane closure on Sample Road B" aria-describedby="mte" {...field('title')} />{err('title', 'mte')}</div>
           <div className="fgrid">
             <div><label htmlFor="mc">Type</label><select id="mc" className="in" {...field('category')}>{CATS.map((c) => <option key={c}>{c}</option>)}</select></div>
-            <div><label htmlFor="mz">Area</label><ZoneSelect id="mz" all="All areas" value={v.zone_id} onChange={(z) => setV({ ...v, zone_id: z })} /></div>
+            <div><label htmlFor="mz">Area</label><ZoneSelect id="mz" all="All areas" value={v.zone_id} onChange={(z) => change({ ...v, zone_id: z })} /></div>
             <div><label htmlFor="ml">Location</label><input id="ml" className="in" placeholder="Street or landmark" {...field('location')} /></div>
             <div><label htmlFor="ms1">Start date</label><input id="ms1" className="in" type="date" aria-describedby="mse" {...field('starts_on')} />{err('starts_on', 'mse')}</div>
             <div><label htmlFor="me1">End date (optional)</label><input id="me1" className="in" type="date" aria-describedby="mde" {...field('ends_on')} />{err('ends_on', 'mde')}</div>
