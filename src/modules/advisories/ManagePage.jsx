@@ -4,9 +4,10 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import ZoneSelect from '../../shared/ZoneSelect.jsx';
 import { isPhotoOk } from '../../shared/supabase.js';
-import { CATS, SEVERITY, dateRange, ago, todayISO } from '../../shared/util.js';
+import { CATS, SEVERITY, dateRange, ago, todayISO, day } from '../../shared/util.js';
 import { myProfile } from '../admin/api.js';
-import { listMyAdvisories, saveAdvisory, publishAdvisory, endAdvisory, uploadAdvisoryPhoto, photoUrl, isOverdue } from './api.js';
+import { listMyAdvisories, saveAdvisory, publishAdvisory, endAdvisory, uploadAdvisoryPhoto, photoUrl, isOverdue, isOver,
+  isUrgent, urgentFrom, URGENT_LEAD_DAYS } from './api.js';
 import PageHero from '../../shared/PageHero.jsx';
 import usePageTitle from '../../shared/usePageTitle.js';
 
@@ -213,7 +214,7 @@ export default function ManagePage() {
             <div><label htmlFor="ms1">Start date</label><input id="ms1" className="in" type="date" aria-describedby="mse" {...field('starts_on')} />{err('starts_on', 'mse')}</div>
             <div><label htmlFor="me1">End date (optional)</label><input id="me1" className="in" type="date" aria-describedby="mde" {...field('ends_on')} />{err('ends_on', 'mde')}</div>
             <div><label htmlFor="mh">Work hours</label><input id="mh" className="in" placeholder="e.g. 9 am to 5 pm, Monday to Saturday" {...field('work_hours')} /></div>
-            <div><label htmlFor="mv">Severity</label><select id="mv" className="in" aria-describedby="mvh" {...field('severity')}>{SEVERITY.map((s) => <option key={s}>{s}</option>)}</select><p className="mut hint" id="mvh">High shows it in the urgent banner on every page.</p></div>
+            <div><label htmlFor="mv">Severity</label><select id="mv" className="in" aria-describedby="mvh" {...field('severity')}>{SEVERITY.map((s) => <option key={s}>{s}</option>)}</select><p className="mut hint" id="mvh">High shows it in the urgent banner on every page, from {URGENT_LEAD_DAYS} days before it starts.</p></div>
             <div><label htmlFor="mst">Work status</label><select id="mst" className="in" {...field('status')}><option>Planned</option><option>Ongoing</option><option>Completed</option></select></div>
           </div>
           <div><label htmlFor="mb">Details</label><textarea id="mb" className="in" rows={4} placeholder="What is happening, and what should people expect?" {...field('body')} /></div>
@@ -262,7 +263,8 @@ export default function ManagePage() {
           <tbody>
             {rows.map((a) => (
               <tr key={a.id}>
-                <td><b>{a.title}</b>{a.severity === 'High' && <> <span className="pill hot">Urgent</span></>}
+                <td><b>{a.title}</b>{isUrgent(a) && <> <span className="pill hot">Urgent</span></>}
+                  {a.severity === 'High' && !isOver(a) && !isUrgent(a) && <> <span className="pill">Urgent from {day(urgentFrom(a), false)}</span></>}
                   {isOverdue(a) && <> <span className="pill late">Past end date</span></>}<br />
                   <span className="mut">{a.status}{a.location ? ` · ${a.location}` : ''}</span></td>
                 <td>{a.category}</td><td>{a.zones ? a.zones.name : 'All areas'}</td>

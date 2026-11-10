@@ -49,7 +49,7 @@ export default function AdvisoriesPage() {
     const ended = f.status === 'ended';
     listAdvisories({
       q: f.q, zoneId: f.zone, category: f.category, onDate: f.date,
-      status: ended ? '' : f.status, ended, severity: f.urgent ? 'High' : '',
+      status: ended ? '' : f.status, ended, urgent: f.urgent,
     }).then((list) => { if (live) setRes({ list, error: false }); },
       (e) => { console.error(e); if (live) setRes({ list: [], error: true }); });
     return () => { live = false; };

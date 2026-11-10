@@ -1,4 +1,5 @@
-// Urgent alert banner (UC05): every high-severity advisory scrolls across the top of every page, right to left. Selecting one opens it. The ticker pauses on hover and on keyboard focus, and stands still for
+// Urgent alert banner (UC05): every urgent advisory (High severity, under way or starting within 3 days; see
+// isUrgent in api.js) scrolls across the top of every page, right to left. Selecting one opens it. The ticker pauses on hover and on keyboard focus, and stands still for
 // visitors who ask their system for reduced motion. The × button hides it for this browser tab, until the urgent
 // advisories change. The list loads again when staff save an advisory and when the visitor comes back to the tab.
 import { useEffect, useRef, useState } from 'react';

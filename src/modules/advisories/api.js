@@ -15,14 +15,21 @@ export const photoUrl = (path) =>
 export const isOverdue = (a) => a.state === 'Published' && !!a.ends_on && a.ends_on < todayISO();
 export const isOver = (a) => a.state === 'Ended' || isOverdue(a);
 
+// UC05: an advisory is urgent when its severity is High and the works are under way or start within
+// URGENT_LEAD_DAYS. High works further ahead become urgent by themselves as the start date comes closer.
+// The banner, the home count, the "Urgent only" filter and the Urgent labels all use this one rule.
+export const URGENT_LEAD_DAYS = 3;
+export const urgentFrom = (a) => (a.starts_on ? addDays(a.starts_on, -URGENT_LEAD_DAYS) : null);
+export const isUrgent = (a) => a.severity === 'High' && !isOver(a) && (!a.starts_on || urgentFrom(a) <= todayISO());
+
 // Saving, publishing or ending an advisory announces it, so parts of the page that show advisories
 // (such as the urgent banner) can load them again.
 export const ADVISORIES_CHANGED = 'advisories-changed';
 
 // UC03: current advisories (or the ended archive), most recently updated first.
 // Current = published and not past the end date. Archive = ended, or published but past the end date.
-// onDate keeps only advisories whose works cover that day.
-export async function listAdvisories({ q, zoneId, category, status, severity, onDate, ended = false, limit } = {}) {
+// onDate keeps only advisories whose works cover that day. urgent keeps only urgent ones (see isUrgent).
+export async function listAdvisories({ q, zoneId, category, status, severity, urgent, onDate, ended = false, limit } = {}) {
   const today = todayISO();
   let r = sb.from('updates').select(ADVISORY).order('updated_at', { ascending: false });
   r = ended
@@ -32,6 +39,7 @@ export async function listAdvisories({ q, zoneId, category, status, severity, on
   if (category) r = r.eq('category', category);
   if (status) r = r.eq('status', status);
   if (severity) r = r.eq('severity', severity);
+  if (urgent) r = r.eq('severity', 'High').or(`starts_on.is.null,starts_on.lte.${addDays(today, URGENT_LEAD_DAYS)}`);
   if (isDay(onDate)) r = r.or(`starts_on.is.null,starts_on.lte.${onDate}`).or(`ends_on.is.null,ends_on.gte.${onDate}`);
   const k = q ? clean(q) : '';
   if (k) r = r.or(`title.ilike.%${k}%,body.ilike.%${k}%,location.ilike.%${k}%`);
@@ -51,15 +59,15 @@ export async function hubSummary() {
   return {
     closures: ongoing.filter((a) => a.category === 'Road closure').length,
     active: ongoing.length,
-    urgent: all.filter((a) => a.severity === 'High').length,
+    urgent: all.filter(isUrgent).length,
     // Works that run on at least one day of the coming week.
     thisWeek: all.filter((a) => (!a.starts_on || a.starts_on <= weekEnd) && (!a.ends_on || a.ends_on >= today)).length,
     latest: all.slice(0, 3),
   };
 }
 
-// UC05: high-severity advisories for the alert banner.
-export const listUrgent = () => listAdvisories({ severity: 'High' });
+// UC05: the urgent advisories for the alert banner.
+export const listUrgent = () => listAdvisories({ urgent: true });
 
 // UC04: published works that have not finished yet, soonest first.
 export async function listSchedule({ zoneId } = {}) {
