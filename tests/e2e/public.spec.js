@@ -97,7 +97,7 @@ test.describe('Module 1: advisories', () => {
 test.describe('Module 2: map', () => {
   test('markers open their details and lead to the report form', async ({ page, errors }) => {
     await open(page, '/map');
-    const marker = page.locator('g.mk[role="button"]').filter({ visible: true }).first();
+    const marker = page.locator('.lmap .mpin[role="button"]').first();
     const label = await marker.getAttribute('aria-label');
     await marker.focus();
     await page.keyboard.press('Enter');
@@ -107,17 +107,21 @@ test.describe('Module 2: map', () => {
     void errors;
   });
 
-  test('zoom buttons and layers work', async ({ page }) => {
+  test('layers, search and zoom work', async ({ page }) => {
     await open(page, '/map');
-    const svg = page.getByRole('group', { name: /Map of the LRT Mutiara Line/ });
-    const before = await svg.getAttribute('viewBox');
-    await page.getByRole('button', { name: 'Zoom in' }).click();
-    expect(await svg.getAttribute('viewBox')).not.toBe(before);
-    await page.getByRole('button', { name: 'Reset view' }).click();
-    expect(await svg.getAttribute('viewBox')).toBe(before);
-    const layer = page.locator('label.lg input').first();
+    const stations = page.locator('.lmap .mpin-station');
+    await expect(stations).toHaveCount(21);
+    const layer = page.getByLabel('LRT line and stations');
     await layer.uncheck();
-    await expect(layer).not.toBeChecked();
+    await expect(stations).toHaveCount(0);
+    // Searching for a station ticks its layer again and shows its details.
+    await page.getByLabel('Search station, street or business').fill('Komtar');
+    await page.getByRole('button', { name: 'Search' }).click();
+    await expect(layer).toBeChecked();
+    await expect(page.getByRole('heading', { name: 'Komtar', level: 3 })).toBeVisible();
+    await page.getByRole('button', { name: 'Zoom out' }).click();
+    await page.getByRole('button', { name: 'Reset view' }).click();
+    await expect(stations).toHaveCount(21);
   });
 });
 
