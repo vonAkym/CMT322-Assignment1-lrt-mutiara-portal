@@ -12,9 +12,47 @@ export async function myProfile() {
   return ok(await sb.from('profiles').select('full_name, role').eq('id', user.id).single());
 }
 
-// ---------- Staff only (blocked by RLS for everyone else) ----------
+// ---------- Tickets (staff only: the database returns nothing to anyone else) ----------
+// Every column, so the pages keep working whether or not the newest migration (escalation) has been run.
+const TICKET = '*';
+
+// UC02: every ticket, newest first. Searching and filtering (UC03) happen in the page, so they are instant.
 export const listTickets = async () =>
-  ok(await sb.from('tickets').select('*').order('created_at', { ascending: false }));
+  ok(await sb.from('tickets').select(TICKET).order('created_at', { ascending: false }));
+
+// UC04: one ticket by its number, with its status history (oldest first). Null when there is no such ticket.
+export async function getTicket(ticketNo) {
+  const t = ok(await sb.from('tickets').select(TICKET).eq('ticket_no', ticketNo).maybeSingle());
+  if (!t) return null;
+  const history = ok(await sb.from('ticket_events').select('*')
+    .eq('ticket_id', t.id).order('created_at', { ascending: true }));
+  return { ...t, history };
+}
+
+// UC05 to UC07: saves the changed fields (priority, assigned_to, status) and returns the saved ticket.
+// A status change is added to the history by the database itself (trigger tickets_log).
 export const updateTicket = async (id, changes) =>
-  ok(await sb.from('tickets').update(changes).eq('id', id).select().single()); // status, priority, assigned_to
+  ok(await sb.from('tickets').update(changes).eq('id', id).select(TICKET).single());
+
+// UC08: a reply the resident sees when tracking the ticket (5 to 1000 characters). Returns the history entry.
+export const replyToTicket = async (id, message) =>
+  ok(await sb.rpc('reply_to_ticket', { p_ticket_id: id, p_message: message.trim() }));
+
+// UC09: hands the ticket to the government officers. The reason stays with staff; the resident only sees
+// that it was passed on. Returns the updated ticket.
+export const escalateTicket = async (id, reason) =>
+  ok(await sb.rpc('escalate_ticket', { p_ticket_id: id, p_reason: reason.trim() }));
+
+// Ticket photos are private. Staff get a link that works for one hour.
+export async function ticketPhotoUrl(path) {
+  const { data, error } = await sb.storage.from('ticket-photos').createSignedUrl(path, 3600);
+  if (error) throw error;
+  return data.signedUrl;
+}
+
+// UC06: the people a ticket can be given to (staff accounts), sorted by name.
+export const listStaff = async () =>
+  ok(await sb.from('profiles').select('id, full_name, role')
+    .in('role', ['admin', 'construction', 'government']).order('full_name'));
+
 // Posting and publishing advisories belong to Module 1: saveAdvisory(), publishAdvisory(), endAdvisory().

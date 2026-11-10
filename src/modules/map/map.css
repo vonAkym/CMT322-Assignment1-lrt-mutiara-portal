@@ -1,0 +1,50 @@
+/* ===== Module 2: disruption map (OpenStreetMap drawn with Leaflet) ===== */
+/* Layout: controls, map, details. One column on narrow screens. */
+.mgrid { display: grid; grid-template-columns: 260px minmax(0, 1fr) 300px; gap: 20px; align-items: start; padding: 12px 0 28px; }
+.mgrid.edit { grid-template-columns: 360px minmax(0, 1fr); }
+@media (max-width: 1060px) { .mgrid, .mgrid.edit { grid-template-columns: minmax(0, 1fr); } }
+
+/* isolation keeps Leaflet's high z-index layers under the sticky site header. */
+.lmap-wrap { position: relative; isolation: isolate; padding: 0; overflow: hidden; }
+.lmap { height: min(72vh, 640px); min-height: 420px; background: var(--mapbg); }
+.lmap.leaflet-container { font-family: "Outfit", Arial, sans-serif; }
+.mreset {
+  position: absolute; top: 10px; right: 10px; z-index: 1000;
+  min-height: 44px; padding: 0 14px; border-radius: 8px; border: 2px solid rgba(0, 0, 0, .2);
+  background: #fff; color: #13261F; font: 600 14px "Outfit", Arial, sans-serif; cursor: pointer;
+}
+.mreset:hover { background: #F4F4F4; }
+
+/* Markers. The same classes draw the small samples in the legend. Colours are fixed because the map tiles are always light. */
+.mpin {
+  display: flex; align-items: center; justify-content: center; box-sizing: border-box;
+  border: 2px solid #fff; border-radius: 50%; box-shadow: 0 1px 4px rgba(0, 0, 0, .45);
+  color: #fff; font: 700 16px/1 "Outfit", Arial, sans-serif;
+}
+.lmap .mpin { display: flex; } /* Leaflet sets display: block on its markers */
+.mpin-closure { background: #B3261E; }
+.mpin-walk { background: #8A4B00; }
+.mpin-detour { background: #1D5FA8; }
+.mpin-biz { background: #14532D; border-radius: 8px; }
+.mpin-spot { background: #FFBA00; color: #0C3B2E; }
+.mpin-station { background: #fff; border: 4px solid #0C3B2E; }
+.mpin.sel { box-shadow: 0 0 0 4px #FFBA00, 0 1px 4px rgba(0, 0, 0, .45); }
+.mpin:focus { outline: none; }
+.mpin:focus-visible { outline: 3px solid #0C3B2E; outline-offset: 3px; }
+.msw { flex: none; width: 24px; height: 24px; font-size: 13px; }
+.msw.mpin-station { width: 16px; height: 16px; margin: 0 4px; }
+
+.mfacts { margin-top: 12px; }
+.mcount { margin: 0; font-size: 14px; }
+
+/* Staff editor: the list of features and the drawing tools. */
+.mlist { list-style: none; margin: 0; padding: 0; }
+.mlist li + li { border-top: 1px solid var(--ln); }
+.mlist button {
+  display: flex; align-items: center; gap: 10px; width: 100%; min-height: 52px; padding: 8px 0;
+  background: none; border: 0; color: var(--ink); font: inherit; text-align: left; cursor: pointer;
+}
+.mlist button:hover b { text-decoration: underline; }
+.mlist small { display: block; color: var(--mut); }
+.mtools { display: flex; gap: 8px; flex-wrap: wrap; }
+.mgrid .fgrid2 > div { min-width: 0; } /* lets the two date boxes shrink to fit the narrow column */

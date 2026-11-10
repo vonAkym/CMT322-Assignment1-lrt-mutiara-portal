@@ -114,7 +114,7 @@ flowchart TB
     M1 & M3 --> ST
 ```
 
-Advisories, zones and tickets are stored in Supabase, so everyone sees the same data. Row Level Security rules in the database decide who may read or change each table. The map and the admin dashboard still use sample data until their modules are connected.
+Advisories, zones and tickets are stored in Supabase, so everyone sees the same data. Row Level Security rules in the database decide who may read or change each table. The map is OpenStreetMap, drawn with the Leaflet library; its closures, routes and business access points are stored in Supabase too.
 
 ### Web engineering principles applied
 
