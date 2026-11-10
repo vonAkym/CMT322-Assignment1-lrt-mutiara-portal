@@ -35,7 +35,8 @@ Free projects pause after about 7 days with no activity. Open the project or the
 4. New query again. Paste `supabase/migrations/20261110000000_ticket_replies.sql` (Module 4 replies and escalation) and click **Run**.
 5. New query again. Paste `supabase/seed.sql` and click **Run**.
 6. New query again. Paste `supabase/seed_advisories.sql` and click **Run**. You can run this one again any time to reset the sample advisories.
-7. Open **Table Editor**. You should see zones, updates, map_features, tickets and the others.
+7. New query again. Paste `supabase/seed_map.sql` (Module 2 map features) and click **Run**. Run it again whenever you re-run `seed_advisories.sql`.
+8. Open **Table Editor**. You should see zones, updates, map_features, tickets and the others.
 
 **Already set up before the advisories migration?** Run only steps 3, 4 and 6.
 **Already set up before the replies migration?** Run only step 4. Until it runs, the site still works, but sending a reply or escalating a ticket says the database needs the latest update.
@@ -82,7 +83,7 @@ Each module has its own folder in `src/modules/`. Inside it, `api.js` holds that
 | Module | Folder | Pages | Database calls (`api.js`) | Still to do |
 | --- | --- | --- | --- | --- |
 | 1. Advisories | `advisories/` | Home, Advisories, advisory detail, Schedule, My advisories, urgent banner | `listAdvisories()`, `getAdvisory()`, `hubSummary()`, `listUrgent()`, `listSchedule()`, `listMyAdvisories()`, `saveAdvisory()`, `publishAdvisory()`, `endAdvisory()`, `uploadAdvisoryPhoto()`, `subscribeToZone()` | Sending the zone alert emails (needs a mail service; sign-ups are already saved) |
-| 2. Map | `map/` | Map | `listMapFeatures()` | Replace the sample `M` list in `MapPage.jsx` |
+| 2. Map | `map/` | Map (OpenStreetMap, drawn with Leaflet), Edit the map (staff) | `listMapFeatures()`, `findPlace()`, `saveMapFeature()`, `deleteMapFeature()`, `listAdvisoryTitles()` | Trace the sample routes onto their real roads with **Edit the map**; check the station positions in `line.js` |
 | 3. Complaints | `complaints/` | Report, Feedback | `submitTicket()`, `trackTicket()` | Done |
 | 4. Admin | `admin/` | Staff sign in, Admin dashboard (ticket list, filters, counts), ticket page (reply, escalate) | `signIn()`, `signOut()`, `myProfile()`, `listTickets()`, `getTicket()`, `updateTicket()`, `ticketPhotoUrl()`, `listStaff()`, `replyToTicket()`, `escalateTicket()` | Zone and response-time figures (UC10), export (UC11), staff roles (UC12) |
 
