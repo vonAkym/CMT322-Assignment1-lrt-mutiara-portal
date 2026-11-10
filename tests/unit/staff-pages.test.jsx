@@ -1,6 +1,7 @@
 // Staff page from Module 1: My advisories (UC06 to UC08). The Module 4 ticket pages are in admin-tickets.test.jsx.
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
+import { Link } from 'react-router';
 import { advisory, renderPage } from './helpers/render.jsx';
 
 vi.mock('../../src/shared/supabase.js', async (orig) => {
@@ -79,5 +80,73 @@ describe('My advisories: the advisory form', () => {
     expect(screen.getByRole('button', { name: 'Edit: Current works' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'View: Current works' })).toBeInTheDocument();
     expect(screen.getAllByText(/Overdue works/).length).toBeGreaterThan(0);
+  });
+});
+
+describe('My advisories: work status and unsaved changes (fix/advisory-form)', () => {
+  const LEAVE = 'You have unsaved changes to this advisory. Leave without saving?';
+  const answer = (yes) => vi.spyOn(window, 'confirm').mockReturnValue(yes);
+  const optionsOf = (label) => [...screen.getByLabelText(label).options].map((o) => o.value);
+
+  it('offers only Planned and Ongoing as the work status of a new advisory', async () => {
+    const { user } = renderPage(<ManagePage />, { path: '/manage' });
+    await user.click(screen.getByRole('button', { name: '+ New advisory' }));
+    expect(optionsOf('Work status')).toEqual(['Planned', 'Ongoing']);
+  });
+
+  it('keeps Completed for an older advisory that already has it', async () => {
+    api.listMyAdvisories.mockResolvedValue([advisory({ id: 4, title: 'Old works', status: 'Completed' })]);
+    const { user } = renderPage(<ManagePage />, { path: '/manage' });
+    await user.click(await screen.findByRole('button', { name: 'Edit: Old works' }));
+    expect(optionsOf('Work status')).toEqual(['Planned', 'Ongoing', 'Completed']);
+    expect(screen.getByLabelText('Work status')).toHaveValue('Completed');
+  });
+
+  it('Cancel closes straight away when nothing was changed', async () => {
+    const confirm = answer(true);
+    const { user } = renderPage(<ManagePage />, { path: '/manage' });
+    await user.click(screen.getByRole('button', { name: '+ New advisory' }));
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(confirm).not.toHaveBeenCalled();
+    expect(screen.queryByLabelText(/^Title/)).not.toBeInTheDocument();
+    confirm.mockRestore();
+  });
+
+  it('Cancel asks first when there are unsaved changes, and keeps them if the answer is no', async () => {
+    const confirm = answer(false);
+    const { user } = renderPage(<ManagePage />, { path: '/manage' });
+    await user.click(screen.getByRole('button', { name: '+ New advisory' }));
+    await user.type(screen.getByLabelText(/^Title/), 'Lane closure');
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(confirm).toHaveBeenCalledWith(LEAVE);
+    expect(screen.getByLabelText(/^Title/)).toHaveValue('Lane closure');
+    confirm.mockReturnValue(true);
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(screen.queryByLabelText(/^Title/)).not.toBeInTheDocument();
+    confirm.mockRestore();
+  });
+
+  it('a menu link asks first when there are unsaved changes', async () => {
+    const confirm = answer(false);
+    const page = <><Link to="/map">Map</Link><ManagePage /></>;
+    const { user } = renderPage(page, { path: '/manage', others: ['/map'] });
+    await user.click(screen.getByRole('button', { name: '+ New advisory' }));
+    await user.type(screen.getByLabelText(/^Title/), 'Lane closure');
+    await user.click(screen.getByRole('link', { name: 'Map' }));
+    expect(confirm).toHaveBeenCalledWith(LEAVE);
+    expect(screen.getByTestId('where')).toHaveTextContent('/manage');
+    confirm.mockReturnValue(true);
+    await user.click(screen.getByRole('link', { name: 'Map' }));
+    expect(screen.getByTestId('where')).toHaveTextContent('/map');
+    confirm.mockRestore();
+  });
+
+  it('asks before the tab is closed or reloaded, only while there are unsaved changes', async () => {
+    const { user } = renderPage(<ManagePage />, { path: '/manage' });
+    const leave = () => { const e = new Event('beforeunload', { cancelable: true }); window.dispatchEvent(e); return e.defaultPrevented; };
+    await user.click(screen.getByRole('button', { name: '+ New advisory' }));
+    expect(leave()).toBe(false);
+    await user.type(screen.getByLabelText(/^Title/), 'Lane closure');
+    expect(leave()).toBe(true);
   });
 });

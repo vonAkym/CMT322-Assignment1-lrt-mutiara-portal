@@ -12,6 +12,7 @@ import PageHero from '../../shared/PageHero.jsx';
 import usePageTitle from '../../shared/usePageTitle.js';
 
 const MAX_PHOTOS = 5;
+const LEAVE = 'You have unsaved changes to this advisory. Leave without saving?';
 const STATES = [['Draft', 'Drafts'], ['Published', 'Published'], ['Ended', 'Ended']];
 // Form fields, named after their database columns.
 const EMPTY = {
@@ -76,12 +77,39 @@ export default function ManagePage() {
     return () => addedRef.current.forEach((p) => URL.revokeObjectURL(p.preview)); // free photo previews on leaving
   }, []);
 
+  // ---------- Unsaved changes ----------
+  // The form remembers what it held when it opened. It has unsaved changes when the fields or kept photos differ
+  // from that, or new photos were added. Leaving then asks first: Cancel, New advisory, Edit or View on another
+  // row, a link in the menu, or closing or reloading the tab.
+  const [start, setStart] = useState('');
+  const snapshot = (values, photos) => JSON.stringify([values, photos]);
+  const dirty = open && (added.length > 0 || snapshot(v, kept) !== start);
+  const okToLeave = () => !dirty || window.confirm(LEAVE);
+
+  useEffect(() => {
+    if (!dirty) return undefined;
+    const onUnload = (e) => { e.preventDefault(); e.returnValue = ''; }; // the browser shows its own "Leave site?"
+    // Menu and other links: asked here, before the router moves on. A plain left click only (not a new tab).
+    const onLink = (e) => {
+      const link = e.target.closest && e.target.closest('a[href]');
+      if (!link || link.target === '_blank' || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+      if (!window.confirm(LEAVE)) { e.preventDefault(); e.stopPropagation(); }
+    };
+    window.addEventListener('beforeunload', onUnload);
+    document.addEventListener('click', onLink, true);
+    return () => { window.removeEventListener('beforeunload', onUnload); document.removeEventListener('click', onLink, true); };
+  }, [dirty]);
+
   // ---------- Form (UC06 and editing) ----------
   const openForm = (a) => {
+    if (!okToLeave()) return;
     added.forEach((p) => URL.revokeObjectURL(p.preview));
+    const values = a ? Object.fromEntries(Object.keys(EMPTY).map((k) => [k, a[k] == null ? '' : String(a[k])])) : { ...EMPTY, starts_on: todayISO() };
+    const photos = a ? [...(a.photo_paths || [])] : [];
     setEditing(a || null);
-    setV(a ? Object.fromEntries(Object.keys(EMPTY).map((k) => [k, a[k] == null ? '' : String(a[k])])) : { ...EMPTY, starts_on: todayISO() });
-    setKept(a ? [...(a.photo_paths || [])] : []);
+    setV(values);
+    setKept(photos);
+    setStart(snapshot(values, photos));
     setAdded([]);
     setErrs({}); setPhotoErr(''); setFormErr(''); setOkMsg('');
     setOpen(true);
@@ -94,6 +122,7 @@ export default function ManagePage() {
   }, [open, editing]);
 
   const closeForm = () => {
+    if (!okToLeave()) return;
     added.forEach((p) => URL.revokeObjectURL(p.preview));
     setAdded([]); setKept([]); setEditing(null); setOpen(false);
   };
@@ -171,7 +200,7 @@ export default function ManagePage() {
 
   // ---------- Row buttons: view, edit, publish, end (UC08) ----------
   const onAct = async (act, a) => {
-    if (act === 'view') { navigate(`/advisories/${a.id}`); return; }
+    if (act === 'view') { if (okToLeave()) navigate(`/advisories/${a.id}`); return; }
     if (act === 'edit') { openForm(a); return; }
     if (act === 'end' && !window.confirm(`End "${a.title}"?\n\nUse this when the work has finished. The advisory moves to the ended archive and shows as completed.`)) return;
     setBusyRow(a.id); setOkMsg(''); setListErr('');
@@ -215,7 +244,11 @@ export default function ManagePage() {
             <div><label htmlFor="me1">End date (optional)</label><input id="me1" className="in" type="date" aria-describedby="mde" {...field('ends_on')} />{err('ends_on', 'mde')}</div>
             <div><label htmlFor="mh">Work hours</label><input id="mh" className="in" placeholder="e.g. 9 am to 5 pm, Monday to Saturday" {...field('work_hours')} /></div>
             <div><label htmlFor="mv">Severity</label><select id="mv" className="in" aria-describedby="mvh" {...field('severity')}>{SEVERITY.map((s) => <option key={s}>{s}</option>)}</select><p className="mut hint" id="mvh">High shows it in the urgent banner on every page, from {URGENT_LEAD_DAYS} days before it starts.</p></div>
-            <div><label htmlFor="mst">Work status</label><select id="mst" className="in" {...field('status')}><option>Planned</option><option>Ongoing</option><option>Completed</option></select></div>
+            <div><label htmlFor="mst">Work status</label><select id="mst" className="in" aria-describedby="msth" {...field('status')}>
+              {/* Finished work is ended with the End button, which also marks it Completed. "Completed" only shows
+                  here for an older advisory that already has it, so its value is not lost. */}
+              {['Planned', 'Ongoing', ...(v.status === 'Completed' ? ['Completed'] : [])].map((s) => <option key={s}>{s}</option>)}
+            </select><p className="mut hint" id="msth">When the work finishes, use End on the list below.</p></div>
           </div>
           <div><label htmlFor="mb">Details</label><textarea id="mb" className="in" rows={4} placeholder="What is happening, and what should people expect?" {...field('body')} /></div>
           <div className="fgrid2">
