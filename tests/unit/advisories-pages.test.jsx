@@ -61,7 +61,7 @@ describe('Advisories page (UC03)', () => {
   it('reads the filters from the address and asks the database for them', async () => {
     renderPage(<AdvisoriesPage />, { path: '/advisories', at: '/advisories?q=pile&zone=1&category=Road+closure&status=Ongoing&date=2026-11-20&urgent=1' });
     await waitFor(() => expect(api.listAdvisories).toHaveBeenCalledWith({
-      q: 'pile', zoneId: '1', category: 'Road closure', onDate: '2026-11-20', status: 'Ongoing', ended: false, severity: 'High',
+      q: 'pile', zoneId: '1', category: 'Road closure', onDate: '2026-11-20', status: 'Ongoing', ended: false, urgent: true,
     }));
     expect(screen.getByLabelText('Search')).toHaveValue('pile');
     expect(screen.getByLabelText('Urgent only')).toBeChecked();
@@ -123,6 +123,11 @@ describe('Advisory card', () => {
   it('shows Ended, without Urgent, once the end date has passed', () => {
     renderPage(<AdvisoryCard a={advisory({ severity: 'High', ends_on: '2020-01-01', starts_on: '2019-12-01' })} />);
     expect(screen.getByText('Ended')).toBeInTheDocument();
+    expect(screen.queryByText('Urgent')).not.toBeInTheDocument();
+  });
+  it('does not show Urgent yet for high-severity works that start more than 3 days from now', () => {
+    const start = new Date(Date.now() + 10 * 864e5).toISOString().slice(0, 10);
+    renderPage(<AdvisoryCard a={advisory({ severity: 'High', status: 'Planned', starts_on: start, ends_on: null })} />);
     expect(screen.queryByText('Urgent')).not.toBeInTheDocument();
   });
   it('uses the first photo, or an icon when there is none', () => {

@@ -2,7 +2,7 @@
 import { Link } from 'react-router';
 import Icon from '../../shared/Icon.jsx';
 import { dateRange, ago } from '../../shared/util.js';
-import { photoUrl, isOver } from './api.js';
+import { photoUrl, isOver, isUrgent } from './api.js';
 
 export const where = (a) => a.location || (a.zones && a.zones.name) || 'Location to be confirmed';
 
@@ -15,7 +15,7 @@ export default function AdvisoryCard({ a }) {
         {first ? <img src={photoUrl(first)} alt="" loading="lazy" /> : <span className="acard-ph"><Icon name={a.category} size={44} /></span>}
         {/* The labels on the photo: urgent first, then where the work stands. */}
         <span className="acard-tags">
-          {a.severity === 'High' && !over && <span className="tag hot">Urgent</span>}
+          {isUrgent(a) && <span className="tag hot">Urgent</span>}
           <span className="tag">{over ? 'Ended' : a.status}</span>
         </span>
         <span className="tag acard-type">{a.category}</span>

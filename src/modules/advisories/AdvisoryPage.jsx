@@ -4,7 +4,8 @@ import { Link, useNavigate, useParams } from 'react-router';
 import Icon from '../../shared/Icon.jsx';
 import { dateRange, ago } from '../../shared/util.js';
 import { reportUrl } from '../complaints/ReportPage.jsx';
-import { getAdvisory, photoUrl, isOver } from './api.js';
+import { getAdvisory, photoUrl, isOver, isUrgent } from './api.js';
+import usePageTitle from '../../shared/usePageTitle.js';
 import { where } from './AdvisoryCard.jsx';
 
 // Plain text from the database, with its line breaks kept.
@@ -40,7 +41,7 @@ function Advisory({ a }) {
     <>
       <div className="adv-head">
         <p>
-          {a.severity === 'High' && !ended && <><span className="pill hot">Urgent</span> </>}
+          {isUrgent(a) && <><span className="pill hot">Urgent</span> </>}
           <span className={`pill ${pill}`}>{ended ? 'Ended' : a.status}</span> <span className="pill">{a.category}</span>
         </p>
         <h1>{a.title}</h1>
@@ -77,6 +78,7 @@ function Advisory({ a }) {
 export default function AdvisoryPage() {
   const { id } = useParams();
   const [a, setA] = useState(undefined); // undefined while loading, null when not available
+  usePageTitle(a ? a.title : a === null ? 'Advisory not available' : 'Advisory');
 
   useEffect(() => {
     let live = true; // another advisory may be opened before this one arrives

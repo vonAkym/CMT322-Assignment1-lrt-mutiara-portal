@@ -9,6 +9,7 @@ import { listAdvisories } from './api.js';
 import AdvisoryCard from './AdvisoryCard.jsx';
 import ZoneAlerts from './ZoneAlerts.jsx';
 import PageHero from '../../shared/PageHero.jsx';
+import usePageTitle from '../../shared/usePageTitle.js';
 
 // Builds the address of this page with some filters set, e.g. advisoriesUrl({ status: 'Ongoing', urgent: true }).
 // Keys: q, zone, category, status ('Planned', 'Ongoing' or 'ended'), date (YYYY-MM-DD), urgent.
@@ -25,6 +26,7 @@ export default function AdvisoriesPage() {
     q: params.get('q') || '', zone: params.get('zone') || '', category: params.get('category') || '',
     status: params.get('status') || '', date: params.get('date') || '', urgent: params.get('urgent') === '1',
   };
+  usePageTitle(f.status === 'ended' ? 'Ended advisories' : f.urgent ? 'Urgent advisories' : 'Advisories');
   const set = (k, v) => setParams((p) => {
     const n = new URLSearchParams(p);
     if (v) n.set(k, v === true ? '1' : v); else n.delete(k);
@@ -47,7 +49,7 @@ export default function AdvisoriesPage() {
     const ended = f.status === 'ended';
     listAdvisories({
       q: f.q, zoneId: f.zone, category: f.category, onDate: f.date,
-      status: ended ? '' : f.status, ended, severity: f.urgent ? 'High' : '',
+      status: ended ? '' : f.status, ended, urgent: f.urgent,
     }).then((list) => { if (live) setRes({ list, error: false }); },
       (e) => { console.error(e); if (live) setRes({ list: [], error: true }); });
     return () => { live = false; };

@@ -1,11 +1,12 @@
-// Urgent alert banner (UC05): every high-severity advisory scrolls across the top of every page, right to left.
-// Selecting one opens it. The ticker pauses on hover and on keyboard focus, and stands still for visitors who
-// ask their system for reduced motion. The × button hides it for this browser tab, until the urgent advisories change.
+// Urgent alert banner (UC05): every urgent advisory (High severity, under way or starting within 3 days; see
+// isUrgent in api.js) scrolls across the top of every page, right to left. Selecting one opens it. The ticker pauses on hover and on keyboard focus, and stands still for
+// visitors who ask their system for reduced motion. The × button hides it for this browser tab, until the urgent
+// advisories change. The list loads again when staff save an advisory and when the visitor comes back to the tab.
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import Icon from '../../shared/Icon.jsx';
 import { dateRange, todayISO } from '../../shared/util.js';
-import { listUrgent } from './api.js';
+import { listUrgent, ADVISORIES_CHANGED } from './api.js';
 
 const KEY = 'urgentHidden';
 const SPEED = 60; // pixels per second
@@ -33,19 +34,32 @@ const Items = ({ list, copy, listRef }) => (
 
 export default function UrgentBanner() {
   const [list, setList] = useState([]);
-  const [hidden, setHidden] = useState(false);
+  const [hiddenKey, setHiddenKey] = useState(null); // the alerts hidden with ×; new or changed alerts show again
   const [size, setSize] = useState({ view: 0, list: 0 });
   const viewRef = useRef(null);
   const listRef = useRef(null);
 
   useEffect(() => {
-    listUrgent().then((l) => setList(order(l)), (e) => console.error(e));
+    let latest = 0; // only the newest answer is drawn when several loads overlap
+    const load = () => {
+      const mine = ++latest;
+      listUrgent().then((l) => { if (mine === latest) setList(order(l)); }, (e) => console.error(e));
+    };
+    const onVisible = () => { if (document.visibilityState === 'visible') load(); };
+    load();
+    window.addEventListener(ADVISORIES_CHANGED, load);
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      latest = -1;
+      window.removeEventListener(ADVISORIES_CHANGED, load);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
   }, []);
 
   const key = list.map((a) => `${a.id}:${a.updated_at}`).join(',');
-  let dismissed = false;
-  try { dismissed = sessionStorage.getItem(KEY) === key; } catch { /* storage blocked: always show */ }
-  const show = list.length > 0 && !hidden && !dismissed;
+  let dismissed = key === hiddenKey;
+  try { dismissed = dismissed || sessionStorage.getItem(KEY) === key; } catch { /* storage blocked: always show */ }
+  const show = list.length > 0 && !dismissed;
 
   // Each pass is at least as wide as the visible strip, so even one short alert loops without a jump.
   // The speed stays the same however many alerts there are.
@@ -62,8 +76,8 @@ export default function UrgentBanner() {
   if (!show) return null;
 
   const hide = () => {
-    setHidden(true);
-    try { sessionStorage.setItem(KEY, key); } catch { /* private mode: just hide */ }
+    setHiddenKey(key);
+    try { sessionStorage.setItem(KEY, key); } catch { /* private mode: hidden until the page reloads */ }
   };
   const seconds = Math.max(10, size.list / SPEED);
   const label = `urgent alert${list.length > 1 ? 's' : ''}`;

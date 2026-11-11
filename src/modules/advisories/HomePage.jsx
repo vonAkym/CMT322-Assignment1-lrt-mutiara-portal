@@ -6,6 +6,7 @@ import ZoneSelect from '../../shared/ZoneSelect.jsx';
 import { hubSummary } from './api.js';
 import AdvisoryCard from './AdvisoryCard.jsx';
 import { advisoriesUrl } from './AdvisoriesPage.jsx';
+import usePageTitle from '../../shared/usePageTitle.js';
 
 // What each number on the banner counts, and the page it opens.
 const TILES = [
@@ -31,6 +32,7 @@ const FAQ = [
 
 export default function HomePage() {
   const navigate = useNavigate();
+  usePageTitle(); // the home page is named after the site only
   const [summary, setSummary] = useState(null);
   const [failed, setFailed] = useState(false);
   const [q, setQ] = useState('');

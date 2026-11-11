@@ -29,6 +29,30 @@ describe('isOverdue / isOver (advisory expiry)', () => {
   });
 });
 
+describe('isUrgent (UC05: High severity, under way or starting within 3 days)', () => {
+  // Today is 2026-11-09 (see beforeEach), so works starting on 2026-11-12 or earlier are urgent.
+  it('is urgent when the works are under way, have no start date, or start within 3 days', () => {
+    expect(api.isUrgent(adv({ severity: 'High', starts_on: '2026-11-01' }))).toBe(true);
+    expect(api.isUrgent(adv({ severity: 'High', starts_on: null }))).toBe(true);
+    expect(api.isUrgent(adv({ severity: 'High', starts_on: '2026-11-12' }))).toBe(true);
+  });
+  it('is not urgent yet when the works start more than 3 days away, and says from when it will be', () => {
+    const later = adv({ severity: 'High', starts_on: '2026-11-13' });
+    expect(api.isUrgent(later)).toBe(false);
+    expect(api.urgentFrom(later)).toBe('2026-11-10');
+  });
+  it('is never urgent when the severity is not High, or the advisory is over', () => {
+    expect(api.isUrgent(adv({ severity: 'Medium', starts_on: '2026-11-01' }))).toBe(false);
+    expect(api.isUrgent(adv({ severity: 'High', state: 'Ended' }))).toBe(false);
+    expect(api.isUrgent(adv({ severity: 'High', ends_on: '2026-11-08' }))).toBe(false);
+  });
+  it('the banner asks the database for the same thing', async () => {
+    await api.listUrgent();
+    expect(fake.filters()).toContainEqual(['eq', 'severity', 'High']);
+    expect(fake.filters()).toContainEqual(['or', 'starts_on.is.null,starts_on.lte.2026-11-12']);
+  });
+});
+
 describe('listAdvisories (UC03 search and filters)', () => {
   it('asks only for current published advisories by default', async () => {
     await api.listAdvisories();
@@ -80,6 +104,13 @@ describe('hubSummary (UC01 home page numbers)', () => {
     const s = await api.hubSummary();
     expect(s).toMatchObject({ closures: 1, active: 2, urgent: 1, thisWeek: 3 });
     expect(s.latest.map((a) => a.id)).toEqual([1, 2, 3]);
+  });
+  it('does not count high-severity works that start more than 3 days away as urgent', async () => {
+    fake.result = { data: [
+      adv({ id: 1, severity: 'High', starts_on: '2026-11-10' }),
+      adv({ id: 2, severity: 'High', status: 'Planned', starts_on: '2026-12-01' }),
+    ], error: null };
+    expect((await api.hubSummary()).urgent).toBe(1);
   });
 });
 
