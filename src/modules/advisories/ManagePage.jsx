@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router';
 import ZoneSelect from '../../shared/ZoneSelect.jsx';
 import { isPhotoOk } from '../../shared/supabase.js';
 import { CATS, SEVERITY, dateRange, ago, todayISO, day } from '../../shared/util.js';
-import { myProfile } from '../admin/api.js';
+import { useStaff } from '../../shared/staff.jsx';
 import { listMyAdvisories, saveAdvisory, publishAdvisory, endAdvisory, uploadAdvisoryPhoto, photoUrl, isOverdue, isOver,
   isUrgent, urgentFrom, URGENT_LEAD_DAYS } from './api.js';
 import PageHero from '../../shared/PageHero.jsx';
@@ -47,7 +47,10 @@ export default function ManagePage() {
   const [okMsg, setOkMsg] = useState('');
   const [listErr, setListErr] = useState('');
   const [busyRow, setBusyRow] = useState(null);
-  const [demo, setDemo] = useState(false);
+  // Admins see and manage every advisory (UC07, UC08); other staff see the ones they posted.
+  const { user, profile } = useStaff();
+  const isAdmin = !!profile && profile.role === 'admin';
+  const postedBy = (a) => (a.created_by && user && a.created_by === user.id ? 'You' : a.posted_by || 'Not recorded');
 
   // Form state. editing is the advisory being changed, or null for a new one.
   const [open, setOpen] = useState(false);
@@ -65,17 +68,14 @@ export default function ManagePage() {
 
   const load = async () => {
     setListErr('');
-    try { setAll(await listMyAdvisories()); } catch (e) {
+    try { setAll(await listMyAdvisories({ all: isAdmin })); } catch (e) {
       console.error(e); setAll([]);
       setListErr('Could not load advisories. Please try again later.');
     }
   };
 
-  useEffect(() => {
-    load();
-    myProfile().then((p) => setDemo(!p), (e) => { console.error(e); setDemo(true); });
-    return () => addedRef.current.forEach((p) => URL.revokeObjectURL(p.preview)); // free photo previews on leaving
-  }, []);
+  useEffect(() => { load(); }, [isAdmin]);
+  useEffect(() => () => addedRef.current.forEach((p) => URL.revokeObjectURL(p.preview)), []); // free photo previews on leaving
 
   // ---------- Unsaved changes ----------
   // The form remembers what it held when it opened. It has unsaved changes when the fields or kept photos differ
@@ -230,7 +230,7 @@ export default function ManagePage() {
       <PageHero kicker="Staff" photo="advisory-viaduct.jpg" title="My advisories" sub="Post, edit, publish and end construction advisories.">
         <div className="ctas" style={{ justifyContent: 'flex-start' }}><button type="button" className="btn gold" onClick={() => openForm()}>+ New advisory</button></div>
       </PageHero>
-      {demo && <p className="note"><b>Demo mode.</b> Staff sign-in is not connected yet, so this page lists every advisory. Saving works only after <code>supabase/dev/demo_without_signin.sql</code> has been run in Supabase (see SETUP.md).</p>}
+      {isAdmin && <p className="note"><b>Admin view.</b> You see every advisory, including ones posted by other staff and sample ones with no author recorded, and you can edit or end any of them.</p>}
 
       {open && (
         <form className="card stack" ref={formRef} noValidate aria-labelledby="mftitle" onSubmit={submit}>
@@ -292,7 +292,7 @@ export default function ManagePage() {
       {listErr && <p className="err" role="alert">{listErr}</p>}
       <div className="card" style={{ padding: 0, overflowX: 'auto' }}>
         <table>
-          <thead><tr><th>Advisory</th><th>Type</th><th>Area</th><th>Dates</th><th>Updated</th><th><span className="vh">Actions</span></th></tr></thead>
+          <thead><tr><th>Advisory</th><th>Type</th><th>Area</th><th>Dates</th>{isAdmin && <th>Posted by</th>}<th>Updated</th><th><span className="vh">Actions</span></th></tr></thead>
           <tbody>
             {rows.map((a) => (
               <tr key={a.id}>
@@ -300,7 +300,7 @@ export default function ManagePage() {
                   {a.severity === 'High' && !isOver(a) && !isUrgent(a) && <> <span className="pill">Urgent from {day(urgentFrom(a), false)}</span></>}
                   {isOverdue(a) && <> <span className="pill late">Past end date</span></>}<br />
                   <span className="mut">{a.status}{a.location ? ` · ${a.location}` : ''}</span></td>
-                <td>{a.category}</td><td>{a.zones ? a.zones.name : 'All areas'}</td>
+                <td>{a.category}</td><td>{a.zones ? a.zones.name : 'All areas'}</td>{isAdmin && <td>{postedBy(a)}</td>}
                 <td>{dateRange(a.starts_on, a.ends_on)}</td><td>{ago(a.updated_at)}</td>
                 <td className="acts"><div className="acts-in"><Actions a={a} busy={busyRow === a.id} onAct={onAct} /></div></td>
               </tr>

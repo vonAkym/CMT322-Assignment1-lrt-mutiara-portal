@@ -92,17 +92,29 @@ export async function subscribeToZone(zoneId, email) {
 }
 
 // ---------- Staff only (UC06 to UC08) ----------
-// Until staff sign-in exists, the database refuses these unless supabase/dev/demo_without_signin.sql was run.
-const NO_RIGHTS = 'The database did not allow this change. Staff sign-in is not connected yet: run ' +
-  'supabase/dev/demo_without_signin.sql in Supabase to try it without signing in.';
+// The database rules (RLS): staff post advisories; only the person who posted one, or an admin, changes it.
+const NO_RIGHTS = 'The database did not allow this change. Only staff can post advisories, and only the person ' +
+  'who posted an advisory or an admin can change it. Try signing out and in again.';
 const refused = (e) => e && (e.code === '42501' || e.code === 'PGRST116' || /row-level security|unauthorized/i.test(e.message));
 
-// Signed-in staff see their own advisories. Without sign-in (demo mode) everyone's are shown.
-export async function listMyAdvisories() {
+// UC07: the advisories on My advisories. Staff get the ones they posted. all: true gives every advisory, for admins,
+// whom the database already lets change any advisory (including sample ones with nobody recorded as the author).
+export async function listMyAdvisories({ all = false } = {}) {
   const { data: { user } } = await sb.auth.getUser();
+  if (!all && !user) return [];
   let r = sb.from('updates').select(ADVISORY).order('updated_at', { ascending: false });
-  if (user) r = r.eq('created_by', user.id);
-  return ok(await r);
+  if (!all) r = r.eq('created_by', user.id);
+  const list = ok(await r);
+  // Who posted each one (posted_by): staff may read each other's names. null when nobody is recorded,
+  // as for the sample advisories added straight into the database. A failed lookup only loses the names.
+  const ids = [...new Set(list.map((a) => a.created_by).filter(Boolean))];
+  let names = {};
+  if (ids.length) {
+    try {
+      names = Object.fromEntries(ok(await sb.from('profiles').select('id, full_name').in('id', ids)).map((p) => [p.id, p.full_name]));
+    } catch (e) { console.error(e); }
+  }
+  return list.map((a) => ({ ...a, posted_by: a.created_by ? names[a.created_by] || 'Staff member' : null }));
 }
 
 export async function uploadAdvisoryPhoto(file) {
