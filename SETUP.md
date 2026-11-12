@@ -33,17 +33,21 @@ Free projects pause after about 7 days with no activity. Open the project or the
 2. Paste all of `supabase/migrations/20261028000000_init.sql` and click **Run**.
 3. New query again. Paste `supabase/migrations/20261108000000_advisories.sql` (Module 1 advisories) and click **Run**.
 4. New query again. Paste `supabase/migrations/20261110000000_ticket_replies.sql` (Module 4 replies and escalation) and click **Run**.
-5. New query again. Paste `supabase/migrations/20261113000000_advisory_location.sql` (Module 1 map pin for each advisory) and click **Run**.
-6. New query again. Paste `supabase/seed.sql` and click **Run**.
-7. New query again. Paste `supabase/seed_advisories.sql` and click **Run**. You can run this one again any time to reset the sample advisories.
-8. New query again. Paste `supabase/seed_map.sql` (Module 2 map features) and click **Run**. Run it again whenever you re-run `seed_advisories.sql`.
-9. Open **Table Editor**. You should see zones, updates, map_features, tickets and the others.
+5. New query again. Paste `supabase/migrations/20261113000000_admin_complete.sql` (Module 4 roles, ticket areas, staff accounts) and click **Run**.
+6. New query again. Paste `supabase/migrations/20261113010000_advisory_location.sql` (Module 1 map pin for each advisory) and click **Run**.
+7. New query again. Paste `supabase/seed.sql` and click **Run**.
+8. New query again. Paste `supabase/seed_advisories.sql` and click **Run**. You can run this one again any time to reset the sample advisories.
+9. New query again. Paste `supabase/seed_map.sql` (Module 2 map features) and click **Run**. Run it again whenever you re-run `seed_advisories.sql`.
+10. Open **Table Editor**. You should see zones, updates, map_features, tickets and the others.
 
-**Already set up before the advisories migration?** Run only steps 3, 4, 5 and 7.
-**Already set up before the replies migration?** Run only steps 4 and 5. Until step 4 runs, the site still works, but sending a reply or escalating a ticket says the database needs the latest update.
-**Already set up before the advisory location migration?** Run only step 5. Until it runs, the site still works without map pins
+**Already set up before the advisories migration?** Run only steps 3, 4, 5, 6 and 8.
+**Already set up before the replies migration?** Run only steps 4, 5 and 6.
+**Already set up before the roles migration?** Run only steps 5 and 6. Until step 5 runs, Manage staff roles says the database needs the latest update, and choosing an area on the Report form fails.
+**Already set up before the advisory location migration?** Run only step 6. Until it runs, the site still works without map pins
 (saving a pin says the database needs the update), but each page logs one refused request in the browser console,
 so `npm run test:e2e` fails until it has been run.
+
+After step 5, each staff role can do only its own part with tickets: **Admin** everything (priority, assignment, escalation, staff roles); **Construction Team** the status of, and replies to, tickets given to the Construction Team or to them by name; **Government Officer** the same for escalated tickets and tickets given to the Government Officers or to them by name. Every staff role can see every ticket and the dashboard.
 
 ### Staff features without signing in (no longer needed)
 
@@ -74,7 +78,7 @@ update public.profiles set role = 'admin'
 where id = (select id from auth.users where email = 'you@example.com');
 ```
 
-Use `'construction'` or `'government'` instead of `'admin'` for the other staff roles.
+Use `'construction'` or `'government'` instead of `'admin'` for the other staff roles. You only need SQL for the first admin: after that, an admin gives other accounts their role and name on **Admin, Manage staff roles**.
 
 3. On the site, click **Sign in** and use that email and password. You land on the admin dashboard, and the header shows **Manage advisories** and **Admin**. You stay signed in on that browser until you click **Sign out**.
 
@@ -89,7 +93,7 @@ Each module has its own folder in `src/modules/`. Inside it, `api.js` holds that
 | 1. Advisories | `advisories/` | Home, Advisories, advisory detail, Schedule, Manage advisories (list, new and edit pages), urgent banner | `listAdvisories()`, `getAdvisory()`, `hubSummary()`, `listUrgent()`, `listSchedule()`, `listMyAdvisories()`, `saveAdvisory()`, `publishAdvisory()`, `endAdvisory()`, `uploadAdvisoryPhoto()`, `subscribeToZone()` | Sending the zone alert emails (needs a mail service; sign-ups are already saved) |
 | 2. Map | `map/` | Map (OpenStreetMap, drawn with Leaflet), Edit the map (staff) | `listMapFeatures()`, `findPlace()`, `saveMapFeature()`, `deleteMapFeature()`, `listAdvisoryTitles()` | Trace the sample routes onto their real roads with **Edit the map**; check the station positions in `line.js` |
 | 3. Complaints | `complaints/` | Report, Feedback | `submitTicket()`, `trackTicket()` | Done |
-| 4. Admin | `admin/` | Staff sign in, Admin dashboard (ticket list, filters, counts), ticket page (reply, escalate) | `signIn()`, `signOut()`, `myProfile()`, `listTickets()`, `getTicket()`, `updateTicket()`, `ticketPhotoUrl()`, `listStaff()`, `replyToTicket()`, `escalateTicket()` | Zone and response-time figures (UC10), export (UC11), staff roles (UC12) |
+| 4. Admin | `admin/` | Staff sign in, Admin dashboard (ticket list, filters, figures, report download and print), ticket page (reply, escalate), Manage staff roles | `signIn()`, `signOut()`, `myProfile()`, `listTickets()`, `listTicketEvents()`, `getTicket()`, `updateTicket()`, `ticketPhotoUrl()`, `listStaff()`, `replyToTicket()`, `escalateTicket()`, `listAccounts()`, `setAccount()` | Done (UC01 to UC12) |
 
 `listZones()` is shared and lives in `src/shared/supabase.js`; the `ZoneSelect` dropdown uses it.
 

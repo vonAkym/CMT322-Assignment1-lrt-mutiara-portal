@@ -6,7 +6,7 @@ import { todayISO, addDays } from '../../shared/util.js';
 const ADVISORY = 'id, title, body, category, status, severity, state, location, lat, lng, starts_on, ends_on, work_hours, ' +
   'detour, affected_businesses, photo_paths, zone_id, created_by, created_at, updated_at, zones(name)';
 
-// The map pin (lat, lng) comes from supabase/migrations/20261113000000_advisory_location.sql. Until that has been run,
+// The map pin (lat, lng) comes from supabase/migrations/20261113010000_advisory_location.sql. Until that has been run,
 // the database refuses any query that asks for those columns, so the site then asks again without them: everything
 // keeps working, just without pins. columns is what the queries ask for at the moment.
 const NO_PIN = ADVISORY.replace('lat, lng, ', '');

@@ -29,7 +29,7 @@ describe('isDay()', () => {
   });
 });
 
-describe('photo checks (shared by Report and My advisories)', () => {
+describe('photo checks (shared by Report and the advisory form)', () => {
   it('allows JPG and PNG up to 5 MB', () => {
     expect(isPhotoOk(file('image/jpeg'))).toBe(true);
     expect(isPhotoOk(file('image/png', 5 * 1024 * 1024))).toBe(true);

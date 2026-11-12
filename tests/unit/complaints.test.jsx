@@ -4,6 +4,10 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { renderPage } from './helpers/render.jsx';
 
 vi.mock('../../src/modules/complaints/api.js', () => ({ submitTicket: vi.fn(), trackTicket: vi.fn() }));
+vi.mock('../../src/shared/supabase.js', async (orig) => {
+  const { SAMPLE_ZONES } = await import('./helpers/render.jsx');
+  return { ...(await orig()), listZones: async () => SAMPLE_ZONES };
+});
 const api = await import('../../src/modules/complaints/api.js');
 const { default: ReportPage } = await import('../../src/modules/complaints/ReportPage.jsx');
 const { default: TrackPage } = await import('../../src/modules/complaints/TrackPage.jsx');
@@ -153,5 +157,19 @@ describe('Feedback: replies and escalation from staff (Module 4, UC08 and UC09)'
     renderPage(<TrackPage />, { path: '/track', at: '/track?ticket=LRT-2026-0006' });
     expect(await screen.findByRole('heading', { name: 'LRT-2026-0006' })).toBeInTheDocument();
     expect(screen.getAllByText('Submitted').length).toBeGreaterThan(1);
+  });
+});
+
+describe('Report: area (for the Module 4 zone figures)', () => {
+  it('sends the chosen area, and none when “Not sure”', async () => {
+    api.submitTicket.mockResolvedValue('LRT-2026-0050');
+    const { user } = renderPage(<ReportPage />, { path: '/report' });
+    await user.type(screen.getByLabelText('Describe the issue'), 'Dust everywhere');
+    await screen.findByRole('option', { name: 'Jelutong' });
+    await user.selectOptions(screen.getByLabelText('Area (optional)'), 'Jelutong');
+    await user.click(screen.getByRole('button', { name: 'Submit concern' }));
+    expect(api.submitTicket).toHaveBeenCalledWith(expect.objectContaining({ zoneId: '2' }));
+    expect(await screen.findByText('LRT-2026-0050')).toBeInTheDocument();
+    expect(screen.getByLabelText('Area (optional)')).toHaveValue('');
   });
 });

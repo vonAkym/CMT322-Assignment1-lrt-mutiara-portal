@@ -25,6 +25,7 @@ After `npm run test:e2e`, open `playwright-report/index.html` for the full resul
 | `staff-pages.test.jsx` | Manage advisories list and the advisory form pages |
 | `admin-api.test.js`, `tickets-logic.test.js` | Module 4 ticket queries, search and filters, counts, assignee choices |
 | `admin-tickets.test.jsx` | Module 4 dashboard (list, filters, quick changes) and ticket page |
+| `admin-complete-logic.test.js`, `admin-complete-pages.test.jsx` | Module 4 role rules, area, response time, report file, Manage staff roles |
 | `app-staff-login.test.jsx` | The whole app: routes, staff-only pages, sign-in (UC01), header and phone menu |
 
 **`tests/e2e/`** (Playwright) builds the real site and clicks through it in Edge, like a visitor.
@@ -35,6 +36,7 @@ After `npm run test:e2e`, open `playwright-report/index.html` for the full resul
 | `public.spec.js` | Resident journeys: search, filters, advisory details, back button, schedule, map, report and track, zone alerts, menu |
 | `staff.spec.js` | Sign-in, wrong password, staff-only pages, sign out, non-staff accounts |
 | `admin-tickets.spec.js` | Ticket dashboard, filters, quick changes and the ticket page, with a pretend tickets table |
+| `admin-complete.spec.js` | Staff roles in action, response figures, report download, Manage staff roles, area on the Report form |
 
 Pages read the **real** Supabase project. Anything that would **save** (a report, a zone alert, a sign-in) gets a fake reply from `tests/e2e/helpers.js`, so the tests never change the database. One test does send a wrong password to the real project, which is harmless.
 
