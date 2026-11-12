@@ -1,5 +1,6 @@
 // Zone alerts: a visitor leaves an email address to hear about advisories in one area.
-// The address is saved in the subscriptions table. Sending the emails needs a mail service, which this project does not have yet.
+// The address is saved in the subscriptions table. Sending the emails needs a mail service, which this project does not have yet,
+// so this box is not shown on any page for now (it was on the Advisories page). The table and saved sign-ups are kept.
 import { useState } from 'react';
 import ZoneSelect, { useZones } from '../../shared/ZoneSelect.jsx';
 import { subscribeToZone, isEmail } from './api.js';

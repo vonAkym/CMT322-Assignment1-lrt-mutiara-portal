@@ -7,7 +7,6 @@ import ZoneSelect from '../../shared/ZoneSelect.jsx';
 import { CATS } from '../../shared/util.js';
 import { listAdvisories } from './api.js';
 import AdvisoryCard from './AdvisoryCard.jsx';
-import ZoneAlerts from './ZoneAlerts.jsx';
 import PageHero from '../../shared/PageHero.jsx';
 import usePageTitle from '../../shared/usePageTitle.js';
 
@@ -77,8 +76,7 @@ export default function AdvisoriesPage() {
           <div><label htmlFor="fd">Works on this date</label><input id="fd" className="in" type="date" value={f.date} onChange={(e) => set('date', e.target.value)} /></div>
           <label className="chk"><input type="checkbox" id="fu" checked={f.urgent} onChange={(e) => set('urgent', e.target.checked)} /> Urgent only</label>
           <button type="button" className="btn s" onClick={() => { setQ(''); setParams({}, { replace: true }); }}>Clear filters</button>
-          <hr className="sep" />
-          <ZoneAlerts />
+          {/* The zone alert sign-up (ZoneAlerts.jsx) is hidden until the site can send the alert emails. */}
         </div>
         <div>
           <p className="mut" role="status">{list && !error ? `${list.length} ${ended ? 'ended ' : ''}advisor${list.length === 1 ? 'y' : 'ies'}` : ''}</p>
