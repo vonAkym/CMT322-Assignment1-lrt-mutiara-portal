@@ -17,7 +17,7 @@ vi.mock('../../src/modules/advisories/AdvisoryMap.jsx', async (orig) => ({
   ...(await orig()), LocationPicker: () => null, PlaceMap: () => null,
 }));
 const api = await import('../../src/modules/advisories/api.js');
-const { default: ManagePage } = await import('../../src/modules/advisories/ManagePage.jsx');
+const { default: AdvisoryFormPage } = await import('../../src/modules/advisories/AdvisoryFormPage.jsx');
 const { default: AdvisoryPage } = await import('../../src/modules/advisories/AdvisoryPage.jsx');
 
 const MON_SAT = [0, 1, 2, 3, 4, 5];
@@ -79,17 +79,21 @@ describe('hoursNow: are the works going on at this moment?', () => {
   });
 });
 
-describe('My advisories: the work hours pickers', () => {
-  beforeEach(() => { vi.clearAllMocks(); api.listMyAdvisories.mockResolvedValue([]); });
-  const start = async (user) => {
-    await user.click(screen.getByRole('button', { name: '+ New advisory' }));
-    await user.type(screen.getByLabelText(/^Title/), 'Night lane closure');
+describe('Advisory form: the work hours pickers', () => {
+  beforeEach(() => { vi.clearAllMocks(); });
+  const newForm = () => renderPage(<AdvisoryFormPage />, { path: '/manage/new', others: ['/manage'] });
+  const editForm = async (a) => {
+    api.getAdvisory.mockResolvedValue({ created_by: 'u1', ...a });
+    const r = renderPage(<AdvisoryFormPage />, { path: '/manage/:id/edit', at: `/manage/${a.id}/edit`, others: ['/manage'] });
+    await screen.findByLabelText(/^Title/);
+    return r;
   };
+  const start = async (user) => { await user.type(screen.getByLabelText(/^Title/), 'Night lane closure'); };
   const saved = async () => { await waitFor(() => expect(api.saveAdvisory).toHaveBeenCalled()); return api.saveAdvisory.mock.calls[0][1]; };
 
   it('saves the chosen times and days in the site’s format, and shows how the public will see them', async () => {
     api.saveAdvisory.mockResolvedValue(advisory({ id: 50, state: 'Draft' }));
-    const { user } = renderPage(<ManagePage />, { path: '/manage' });
+    const { user } = newForm();
     await start(user);
     await user.type(screen.getByLabelText('Start time'), '22:00');
     await user.type(screen.getByLabelText('End time'), '06:00');
@@ -101,7 +105,7 @@ describe('My advisories: the work hours pickers', () => {
 
   it('24 hours needs no times', async () => {
     api.saveAdvisory.mockResolvedValue(advisory({ id: 50, state: 'Draft' }));
-    const { user } = renderPage(<ManagePage />, { path: '/manage' });
+    const { user } = newForm();
     await start(user);
     await user.click(screen.getByLabelText(/24 hours/));
     expect(screen.getByLabelText('Start time')).toBeDisabled();
@@ -113,14 +117,14 @@ describe('My advisories: the work hours pickers', () => {
 
   it('work hours stay optional', async () => {
     api.saveAdvisory.mockResolvedValue(advisory({ id: 50, state: 'Draft' }));
-    const { user } = renderPage(<ManagePage />, { path: '/manage' });
+    const { user } = newForm();
     await start(user);
     await user.click(screen.getByRole('button', { name: /Save as draft/ }));
     expect((await saved()).work_hours).toBeNull();
   });
 
   it('asks for what is missing, and puts the cursor there', async () => {
-    const { user } = renderPage(<ManagePage />, { path: '/manage' });
+    const { user } = newForm();
     await start(user);
     await user.type(screen.getByLabelText('Start time'), '09:00');
     await user.click(screen.getByRole('button', { name: /Save as draft/ }));
@@ -134,7 +138,7 @@ describe('My advisories: the work hours pickers', () => {
   });
 
   it('refuses the same start and end time', async () => {
-    const { user } = renderPage(<ManagePage />, { path: '/manage' });
+    const { user } = newForm();
     await start(user);
     await user.type(screen.getByLabelText('Start time'), '09:00');
     await user.type(screen.getByLabelText('End time'), '09:00');
@@ -145,10 +149,8 @@ describe('My advisories: the work hours pickers', () => {
   });
 
   it('opens saved hours in the pickers, and Clear hours removes them', async () => {
-    api.listMyAdvisories.mockResolvedValue([advisory({ id: 4, title: 'Piling', work_hours: '9:00 am – 5:00 pm, Mon–Sat' })]);
     api.saveAdvisory.mockResolvedValue(advisory({ id: 4 }));
-    const { user } = renderPage(<ManagePage />, { path: '/manage' });
-    await user.click(await screen.findByRole('button', { name: 'Edit: Piling' }));
+    const { user } = await editForm(advisory({ id: 4, title: 'Piling', work_hours: '9:00 am – 5:00 pm, Mon–Sat' }));
     expect(screen.getByLabelText('Start time')).toHaveValue('09:00');
     expect(screen.getByLabelText('End time')).toHaveValue('17:00');
     expect(screen.getByLabelText('Sat')).toBeChecked();
@@ -159,20 +161,16 @@ describe('My advisories: the work hours pickers', () => {
   });
 
   it('keeps hours written the old way until staff replace or remove them', async () => {
-    api.listMyAdvisories.mockResolvedValue([advisory({ id: 5, title: 'Deliveries', work_hours: 'Deliveries 7 am to 10 am' })]);
     api.saveAdvisory.mockResolvedValue(advisory({ id: 5 }));
-    const { user } = renderPage(<ManagePage />, { path: '/manage' });
-    await user.click(await screen.findByRole('button', { name: 'Edit: Deliveries' }));
+    const { user } = await editForm(advisory({ id: 5, title: 'Deliveries', work_hours: 'Deliveries 7 am to 10 am' }));
     expect(screen.getByText(/Saved earlier as “Deliveries 7 am to 10 am”/)).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Save changes' }));
     expect((await saved()).work_hours).toBe('Deliveries 7 am to 10 am');
   });
 
   it('opening an advisory with saved hours is not an unsaved change', async () => {
-    api.listMyAdvisories.mockResolvedValue([advisory({ id: 4, title: 'Piling', work_hours: '24 hours, Every day' })]);
     const confirm = vi.spyOn(window, 'confirm');
-    const { user } = renderPage(<ManagePage />, { path: '/manage' });
-    await user.click(await screen.findByRole('button', { name: 'Edit: Piling' }));
+    const { user } = await editForm(advisory({ id: 4, title: 'Piling', work_hours: '24 hours, Every day' }));
     await user.click(screen.getByRole('button', { name: 'Cancel' }));
     expect(confirm).not.toHaveBeenCalled();
     confirm.mockRestore();

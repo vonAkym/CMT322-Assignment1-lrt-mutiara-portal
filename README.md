@@ -101,7 +101,7 @@ The portal is a single-page app built with **React** and **Vite**, with **Supaba
 ```mermaid
 flowchart TB
     subgraph Browser["Browser: React app"]
-      M1["Module 1: advisories<br/>home, advisories, schedule, My advisories"]
+      M1["Module 1: advisories<br/>home, advisories, schedule, Manage advisories"]
       M2["Module 2: map"]
       M3["Module 3: complaints<br/>report, feedback"]
       M4["Module 4: admin<br/>sign-in, dashboard"]
@@ -162,7 +162,7 @@ Then open the address it prints, usually `http://localhost:5173`. The page reloa
 │   │   ├── staff.jsx       simulated staff sign-in
 │   │   └── styles.css      all styles
 │   └── modules/            one folder per module, each with api.js (database calls) and routes.jsx (pages)
-│       ├── advisories/     Module 1: home, advisories, advisory detail, schedule, My advisories, urgent banner
+│       ├── advisories/     Module 1: home, advisories, advisory detail, schedule, Manage advisories, urgent banner
 │       ├── map/            Module 2: disruption map
 │       ├── complaints/     Module 3: report a concern, ticket tracking
 │       └── admin/          Module 4: sign-in and staff dashboard

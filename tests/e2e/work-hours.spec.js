@@ -15,7 +15,7 @@ test('staff pick the work hours and days, and the public sees them', async ({ pa
   const saves = await fakeAdvisories(page, [], BASE);
   await signInAsStaff(page);
   await page.goto('./#/manage');
-  await page.getByRole('button', { name: '+ New advisory' }).click();
+  await page.getByRole('link', { name: '+ New advisory' }).click();
   await page.getByLabel(/^Title/).fill('Night barrier works');
   await page.getByLabel('Start time', { exact: true }).fill('22:00');
   await page.getByLabel('End time', { exact: true }).fill('06:00');

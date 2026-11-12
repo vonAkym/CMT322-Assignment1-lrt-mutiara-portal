@@ -27,7 +27,7 @@ test('staff drop a pin on the map when posting an advisory', async ({ page, erro
   const saves = await fakeAdvisories(page, [], PINNED);
   await signInAsStaff(page);
   await page.goto('./#/manage');
-  await page.getByRole('button', { name: '+ New advisory' }).click();
+  await page.getByRole('link', { name: '+ New advisory' }).click();
   await page.getByLabel(/^Title/).fill('Lane closure near Komtar');
   const map = page.getByRole('region', { name: /Map for placing the works location/ });
   await expect(page.getByText('No pin yet. Click the map where the works are.')).toBeVisible();

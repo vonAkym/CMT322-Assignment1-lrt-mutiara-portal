@@ -95,8 +95,8 @@ export default function AdminPage() {
           </div>
           <div className="card stack" style={{ alignSelf: 'start' }}>
             <h2>Construction advisories</h2>
-            <p className="mut">Advisories are posted, edited and ended on the My advisories page.</p>
-            <button type="button" className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => navigate('/manage')}>Open My advisories</button>
+            <p className="mut">Advisories are posted, edited and ended on the Manage advisories page.</p>
+            <button type="button" className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => navigate('/manage')}>Open Manage advisories</button>
           </div>
         </div>
 

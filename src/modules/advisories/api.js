@@ -117,7 +117,7 @@ const NO_RIGHTS = 'The database did not allow this change. Only staff can post a
   'who posted an advisory or an admin can change it. Try signing out and in again.';
 const refused = (e) => e && (e.code === '42501' || e.code === 'PGRST116' || /row-level security|unauthorized/i.test(e.message));
 
-// UC07: the advisories on My advisories. Staff get the ones they posted. all: true gives every advisory, for admins,
+// UC07: the advisories on Manage advisories. Staff get the ones they posted. all: true gives every advisory, for admins,
 // whom the database already lets change any advisory (including sample ones with nobody recorded as the author).
 export async function listMyAdvisories({ all = false } = {}) {
   const { data: { user } } = await sb.auth.getUser();

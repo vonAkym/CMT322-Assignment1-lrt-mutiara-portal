@@ -50,7 +50,7 @@ export async function fakeSignIn(page, role = 'admin') {
   await page.route('**/auth/v1/user', (r) => r.fulfill({ json: user }));
   await page.route('**/auth/v1/logout*', (r) => r.fulfill({ status: 204, body: '' }));
   // The signed-in profile is asked for as one row (.single()); lists of staff, such as listStaff() or the names on
-  // My advisories, as an array.
+  // Manage advisories, as an array.
   await page.route('**/rest/v1/profiles*', (r) => r.fulfill({
     json: (r.request().headers().accept || '').includes('vnd.pgrst.object')
       ? { full_name: 'Test Staff', role }

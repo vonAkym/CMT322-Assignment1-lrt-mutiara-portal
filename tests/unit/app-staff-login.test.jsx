@@ -63,7 +63,7 @@ describe('staff pages are protected', () => {
     await openApp('#/admin', { signedInAs: ADMIN });
     expect(await screen.findByRole('heading', { level: 1, name: 'Operational dashboard' })).toBeInTheDocument();
     const nav = within(header()).getByRole('navigation', { name: 'Main' });
-    expect(within(nav).getByRole('link', { name: 'My advisories' })).toBeInTheDocument();
+    expect(within(nav).getByRole('link', { name: 'Manage advisories' })).toBeInTheDocument();
     expect(within(nav).getByRole('link', { name: 'Admin' })).toBeInTheDocument();
     expect(within(header()).getByRole('button', { name: 'Sign out' })).toBeInTheDocument();
   });
@@ -126,7 +126,7 @@ describe('sign-in form (UC01)', () => {
     await user.type(screen.getByLabelText('Password'), 'secret');
     await user.click(submitBtn());
     expect(adminApi.signIn).toHaveBeenCalledWith('staff@example.com', 'secret');
-    expect(await screen.findByRole('heading', { level: 1, name: 'My advisories' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { level: 1, name: 'Manage advisories' })).toBeInTheDocument();
     expect(window.location.hash).toBe('#/manage');
   });
 

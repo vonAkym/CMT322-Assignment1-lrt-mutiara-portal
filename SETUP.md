@@ -76,7 +76,7 @@ where id = (select id from auth.users where email = 'you@example.com');
 
 Use `'construction'` or `'government'` instead of `'admin'` for the other staff roles.
 
-3. On the site, click **Sign in** and use that email and password. You land on the admin dashboard, and the header shows **My advisories** and **Admin**. You stay signed in on that browser until you click **Sign out**.
+3. On the site, click **Sign in** and use that email and password. You land on the admin dashboard, and the header shows **Manage advisories** and **Admin**. You stay signed in on that browser until you click **Sign out**.
 
 Only staff roles can sign in, read tickets, change ticket status and post updates. An account with the default role (`resident`) is refused at sign-in, and the Row Level Security rules in the schema give it nothing back either way.
 
@@ -86,7 +86,7 @@ Each module has its own folder in `src/modules/`. Inside it, `api.js` holds that
 
 | Module | Folder | Pages | Database calls (`api.js`) | Still to do |
 | --- | --- | --- | --- | --- |
-| 1. Advisories | `advisories/` | Home, Advisories, advisory detail, Schedule, My advisories, urgent banner | `listAdvisories()`, `getAdvisory()`, `hubSummary()`, `listUrgent()`, `listSchedule()`, `listMyAdvisories()`, `saveAdvisory()`, `publishAdvisory()`, `endAdvisory()`, `uploadAdvisoryPhoto()`, `subscribeToZone()` | Sending the zone alert emails (needs a mail service; sign-ups are already saved) |
+| 1. Advisories | `advisories/` | Home, Advisories, advisory detail, Schedule, Manage advisories (list, new and edit pages), urgent banner | `listAdvisories()`, `getAdvisory()`, `hubSummary()`, `listUrgent()`, `listSchedule()`, `listMyAdvisories()`, `saveAdvisory()`, `publishAdvisory()`, `endAdvisory()`, `uploadAdvisoryPhoto()`, `subscribeToZone()` | Sending the zone alert emails (needs a mail service; sign-ups are already saved) |
 | 2. Map | `map/` | Map (OpenStreetMap, drawn with Leaflet), Edit the map (staff) | `listMapFeatures()`, `findPlace()`, `saveMapFeature()`, `deleteMapFeature()`, `listAdvisoryTitles()` | Trace the sample routes onto their real roads with **Edit the map**; check the station positions in `line.js` |
 | 3. Complaints | `complaints/` | Report, Feedback | `submitTicket()`, `trackTicket()` | Done |
 | 4. Admin | `admin/` | Staff sign in, Admin dashboard (ticket list, filters, counts), ticket page (reply, escalate) | `signIn()`, `signOut()`, `myProfile()`, `listTickets()`, `getTicket()`, `updateTicket()`, `ticketPhotoUrl()`, `listStaff()`, `replyToTicket()`, `escalateTicket()` | Zone and response-time figures (UC10), export (UC11), staff roles (UC12) |

@@ -30,6 +30,7 @@ const api = await import('../../src/modules/advisories/api.js');
 const { mapUrl } = await import('../../src/modules/advisories/AdvisoryMap.jsx');
 const { default: AdvisoryPage } = await import('../../src/modules/advisories/AdvisoryPage.jsx');
 const { default: ManagePage } = await import('../../src/modules/advisories/ManagePage.jsx');
+const { default: AdvisoryFormPage } = await import('../../src/modules/advisories/AdvisoryFormPage.jsx');
 
 beforeEach(() => { vi.clearAllMocks(); api.listMyAdvisories.mockResolvedValue([]); });
 
@@ -64,16 +65,18 @@ describe('Advisory page (UC02): where the works are', () => {
   });
 });
 
-describe('My advisories (UC06, UC07): pinning the location', () => {
-  const fill = async (user) => {
-    await user.click(screen.getByRole('button', { name: '+ New advisory' }));
-    await user.type(screen.getByLabelText(/^Title/), 'Lane closure');
+describe('Advisory form (UC06, UC07): pinning the location', () => {
+  const newForm = () => renderPage(<AdvisoryFormPage />, { path: '/manage/new', others: ['/manage'] });
+  const editForm = (a) => {
+    api.getAdvisory.mockResolvedValue(a);
+    return renderPage(<AdvisoryFormPage />, { path: '/manage/:id/edit', at: `/manage/${a.id}/edit`, others: ['/manage'] });
   };
+  const fill = async (user) => { await user.type(screen.getByLabelText(/^Title/), 'Lane closure'); };
   const saved = async () => { await waitFor(() => expect(api.saveAdvisory).toHaveBeenCalled()); return api.saveAdvisory.mock.calls[0][1]; };
 
   it('saves the pin dropped on the map', async () => {
     api.saveAdvisory.mockResolvedValue(advisory({ id: 50, state: 'Draft' }));
-    const { user } = renderPage(<ManagePage />, { path: '/manage' });
+    const { user } = newForm();
     await fill(user);
     await user.click(screen.getByRole('button', { name: 'Click the map' }));
     expect(screen.getByText('Picker pin: 5.4141,100.3288')).toBeInTheDocument();
@@ -83,7 +86,7 @@ describe('My advisories (UC06, UC07): pinning the location', () => {
 
   it('sends no pin for a new advisory without one (so it saves even before the database has pins)', async () => {
     api.saveAdvisory.mockResolvedValue(advisory({ id: 50, state: 'Draft' }));
-    const { user } = renderPage(<ManagePage />, { path: '/manage' });
+    const { user } = newForm();
     await fill(user);
     await user.click(screen.getByRole('button', { name: 'Click the map' }));
     await user.click(screen.getByRole('button', { name: 'Remove pin' }));
@@ -94,17 +97,15 @@ describe('My advisories (UC06, UC07): pinning the location', () => {
   });
 
   it('clears the saved pin when staff remove it from an advisory', async () => {
-    api.listMyAdvisories.mockResolvedValue([advisory({ id: 4, title: 'Pinned works', lat: 5.41, lng: 100.33 })]);
     api.saveAdvisory.mockResolvedValue(advisory({ id: 4 }));
-    const { user } = renderPage(<ManagePage />, { path: '/manage' });
-    await user.click(await screen.findByRole('button', { name: 'Edit: Pinned works' }));
-    await user.click(screen.getByRole('button', { name: 'Remove pin' }));
+    const { user } = editForm(advisory({ id: 4, title: 'Pinned works', lat: 5.41, lng: 100.33, created_by: 'u1' }));
+    await user.click(await screen.findByRole('button', { name: 'Remove pin' }));
     await user.click(screen.getByRole('button', { name: 'Save changes' }));
     expect(await saved()).toMatchObject({ lat: null, lng: null });
   });
 
   it('a place found by the search fills in an empty Location box, but never replaces what staff wrote', async () => {
-    const { user } = renderPage(<ManagePage />, { path: '/manage' });
+    const { user } = newForm();
     await fill(user);
     const where = screen.getByLabelText('Where the works are, in words');
     await user.click(screen.getByRole('button', { name: 'Search Komtar' }));
@@ -115,11 +116,9 @@ describe('My advisories (UC06, UC07): pinning the location', () => {
   });
 
   it('opens an advisory with its saved pin, and moving the pin counts as an unsaved change', async () => {
-    api.listMyAdvisories.mockResolvedValue([advisory({ id: 4, title: 'Pinned works', lat: 5.41, lng: 100.33 })]);
     const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
-    const { user } = renderPage(<ManagePage />, { path: '/manage' });
-    await user.click(await screen.findByRole('button', { name: 'Edit: Pinned works' }));
-    expect(screen.getByText('Picker pin: 5.41,100.33')).toBeInTheDocument();
+    const { user } = editForm(advisory({ id: 4, title: 'Pinned works', lat: 5.41, lng: 100.33, created_by: 'u1' }));
+    expect(await screen.findByText('Picker pin: 5.41,100.33')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Click the map' }));
     await user.click(screen.getByRole('button', { name: 'Cancel' }));
     expect(confirm).toHaveBeenCalled();
