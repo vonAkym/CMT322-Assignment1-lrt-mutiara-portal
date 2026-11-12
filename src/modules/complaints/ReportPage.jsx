@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { isPhotoOk } from '../../shared/supabase.js';
+import ZoneSelect from '../../shared/ZoneSelect.jsx';
 import { submitTicket } from './api.js';
 import { trackUrl } from './TrackPage.jsx';
 import PageHero from '../../shared/PageHero.jsx';
@@ -15,7 +16,7 @@ export default function ReportPage() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const fileRef = useRef(null);
-  const blank = { category: CATEGORIES[0], description: '', location: params.get('location') || '', name: '', anonymous: false };
+  const blank = { category: CATEGORIES[0], description: '', location: params.get('location') || '', zoneId: '', name: '', anonymous: false };
   const [v, setV] = useState(blank);
   const [descErr, setDescErr] = useState(false);
   const [photoErr, setPhotoErr] = useState('');
@@ -59,6 +60,7 @@ export default function ReportPage() {
           <div><label htmlFor="rd">Describe the issue</label><textarea id="rd" className="in" rows={4} maxLength={2000} placeholder="What happened and when?" {...field('description')} />
             {descErr && <p className="err">Please describe the issue (at least 5 characters).</p>}</div>
           <div><label htmlFor="rl">Location</label><input id="rl" className="in" placeholder="Street or landmark" {...field('location')} /></div>
+          <div><label htmlFor="rz">Area (optional)</label><ZoneSelect id="rz" all="Not sure" value={v.zoneId} onChange={(z) => setV({ ...v, zoneId: z })} /></div>
           <div><label htmlFor="rp">Photo (JPG or PNG, up to 5 MB)</label><input id="rp" ref={fileRef} type="file" accept="image/jpeg,image/png" className="in" />
             {photoErr && <p className="err">{photoErr}</p>}</div>
           <div><label htmlFor="rn">Your name (optional)</label><input id="rn" className="in" {...field('name')} /></div>
