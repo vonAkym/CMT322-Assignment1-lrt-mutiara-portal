@@ -49,10 +49,12 @@ export async function fakeSignIn(page, role = 'admin') {
   });
   await page.route('**/auth/v1/user', (r) => r.fulfill({ json: user }));
   await page.route('**/auth/v1/logout*', (r) => r.fulfill({ status: 204, body: '' }));
+  // The signed-in profile is asked for as one row (.single()); lists of staff, such as listStaff() or the names on
+  // My advisories, as an array.
   await page.route('**/rest/v1/profiles*', (r) => r.fulfill({
-    json: r.request().url().includes('role=in.') // listStaff() asks for every staff member
-      ? [{ id: user.id, full_name: 'Test Staff', role }, { id: 'p2', full_name: 'Ravi', role: 'construction' }]
-      : { full_name: 'Test Staff', role },
+    json: (r.request().headers().accept || '').includes('vnd.pgrst.object')
+      ? { full_name: 'Test Staff', role }
+      : [{ id: user.id, full_name: 'Test Staff', role }, { id: 'p2', full_name: 'Ravi', role: 'construction' }],
   }));
   // The fake token would be refused by the real project, so other requests go as a visitor instead.
   await page.route('**/rest/v1/**', (r) => {
