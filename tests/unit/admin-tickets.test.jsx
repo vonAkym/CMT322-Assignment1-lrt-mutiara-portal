@@ -3,9 +3,16 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { screen, waitFor, within } from '@testing-library/react';
 import { renderPage } from './helpers/render.jsx';
 
+// The signed-in person. Tests change `me.profile` to try each role; the default is an admin.
+const me = vi.hoisted(() => ({ profile: { full_name: 'Aisyah', role: 'admin' }, user: { id: 'a' } }));
+vi.mock('../../src/shared/staff.jsx', async (orig) => ({ ...(await orig()), useStaff: () => me }));
+vi.mock('../../src/shared/supabase.js', async (orig) => {
+  const { SAMPLE_ZONES } = await import('./helpers/render.jsx');
+  return { ...(await orig()), listZones: async () => SAMPLE_ZONES };
+});
 vi.mock('../../src/modules/admin/api.js', () => ({
   listTickets: vi.fn(), getTicket: vi.fn(), updateTicket: vi.fn(), listStaff: vi.fn(), ticketPhotoUrl: vi.fn(),
-  replyToTicket: vi.fn(), escalateTicket: vi.fn(),
+  replyToTicket: vi.fn(), escalateTicket: vi.fn(), listTicketEvents: vi.fn(), listAccounts: vi.fn(), setAccount: vi.fn(),
   myProfile: vi.fn(), signIn: vi.fn(), signOut: vi.fn(),
 }));
 const api = await import('../../src/modules/admin/api.js');
@@ -26,6 +33,8 @@ const STAFF = [{ id: 'a', full_name: 'Aisyah', role: 'admin' }];
 
 beforeEach(() => {
   vi.clearAllMocks();
+  me.profile = { full_name: 'Aisyah', role: 'admin' };
+  api.listTicketEvents.mockResolvedValue([]);
   api.listTickets.mockResolvedValue(TICKETS);
   api.listStaff.mockResolvedValue(STAFF);
 });
