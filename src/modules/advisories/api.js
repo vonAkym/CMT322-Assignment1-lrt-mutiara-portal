@@ -3,8 +3,23 @@
 import { sb, ok, clean, isDay, checkPhoto, photoName } from '../../shared/supabase.js';
 import { todayISO, addDays } from '../../shared/util.js';
 
-const ADVISORY = 'id, title, body, category, status, severity, state, location, starts_on, ends_on, work_hours, ' +
+const ADVISORY = 'id, title, body, category, status, severity, state, location, lat, lng, starts_on, ends_on, work_hours, ' +
   'detour, affected_businesses, photo_paths, zone_id, created_by, created_at, updated_at, zones(name)';
+
+// The map pin (lat, lng) comes from supabase/migrations/20261113000000_advisory_location.sql. Until that has been run,
+// the database refuses any query that asks for those columns, so the site then asks again without them: everything
+// keeps working, just without pins. columns is what the queries ask for at the moment.
+const NO_PIN = ADVISORY.replace('lat, lng, ', '');
+let columns = ADVISORY;
+const noColumn = (e) => !!e && e.code === '42703';
+// Runs the query that make(columns) builds, and asks again without the pin when the columns are missing.
+// (Several queries can be under way at once, so each checks the columns it asked for itself.)
+async function query(make) {
+  const asked = columns;
+  const r = await make(asked);
+  if (noColumn(r.error) && asked !== NO_PIN) { columns = NO_PIN; return make(NO_PIN); }
+  return r;
+}
 
 // A photo is either a file in the update-photos bucket or a sample image shipped with the site (public/assets/...).
 export const photoUrl = (path) =>
@@ -30,8 +45,11 @@ export const ADVISORIES_CHANGED = 'advisories-changed';
 // Current = published and not past the end date. Archive = ended, or published but past the end date.
 // onDate keeps only advisories whose works cover that day. urgent keeps only urgent ones (see isUrgent).
 export async function listAdvisories({ q, zoneId, category, status, severity, urgent, onDate, ended = false, limit } = {}) {
+  return ok(await query((cols) => listQuery(cols, { q, zoneId, category, status, severity, urgent, onDate, ended, limit })));
+}
+function listQuery(cols, { q, zoneId, category, status, severity, urgent, onDate, ended, limit }) {
   const today = todayISO();
-  let r = sb.from('updates').select(ADVISORY).order('updated_at', { ascending: false });
+  let r = sb.from('updates').select(cols).order('updated_at', { ascending: false });
   r = ended
     ? r.or(`state.eq.Ended,and(state.eq.Published,ends_on.lt.${today})`)
     : r.eq('state', 'Published').or(`ends_on.is.null,ends_on.gte.${today}`);
@@ -44,12 +62,12 @@ export async function listAdvisories({ q, zoneId, category, status, severity, ur
   const k = q ? clean(q) : '';
   if (k) r = r.or(`title.ilike.%${k}%,body.ilike.%${k}%,location.ilike.%${k}%`);
   if (limit) r = r.limit(limit);
-  return ok(await r);
+  return r;
 }
 
 // UC02: one advisory with all its details. Returns null if it does not exist (or is a draft you cannot see).
 export const getAdvisory = async (id) =>
-  ok(await sb.from('updates').select(ADVISORY).eq('id', id).maybeSingle());
+  ok(await query((cols) => sb.from('updates').select(cols).eq('id', id).maybeSingle()));
 
 // UC01: today's overview, worked out from the published advisories.
 export async function hubSummary() {
@@ -71,12 +89,14 @@ export const listUrgent = () => listAdvisories({ urgent: true });
 
 // UC04: published works that have not finished yet, soonest first.
 export async function listSchedule({ zoneId } = {}) {
-  let r = sb.from('updates').select(ADVISORY)
-    .eq('state', 'Published')
-    .or(`ends_on.is.null,ends_on.gte.${todayISO()}`)
-    .order('starts_on', { ascending: true, nullsFirst: true });
-  if (zoneId) r = r.eq('zone_id', zoneId);
-  return ok(await r);
+  return ok(await query((cols) => {
+    let r = sb.from('updates').select(cols)
+      .eq('state', 'Published')
+      .or(`ends_on.is.null,ends_on.gte.${todayISO()}`)
+      .order('starts_on', { ascending: true, nullsFirst: true });
+    if (zoneId) r = r.eq('zone_id', zoneId);
+    return r;
+  }));
 }
 
 // Zone alerts: the same check the database makes on subscriptions.email.
@@ -102,9 +122,10 @@ const refused = (e) => e && (e.code === '42501' || e.code === 'PGRST116' || /row
 export async function listMyAdvisories({ all = false } = {}) {
   const { data: { user } } = await sb.auth.getUser();
   if (!all && !user) return [];
-  let r = sb.from('updates').select(ADVISORY).order('updated_at', { ascending: false });
-  if (!all) r = r.eq('created_by', user.id);
-  const list = ok(await r);
+  const list = ok(await query((cols) => {
+    const r = sb.from('updates').select(cols).order('updated_at', { ascending: false });
+    return all ? r : r.eq('created_by', user.id);
+  }));
   // Who posted each one (posted_by): staff may read each other's names. null when nobody is recorded,
   // as for the sample advisories added straight into the database. A failed lookup only loses the names.
   const ids = [...new Set(list.map((a) => a.created_by).filter(Boolean))];
@@ -126,9 +147,13 @@ export async function uploadAdvisoryPhoto(file) {
 }
 
 // UC06 and UC07: creates an advisory when id is empty, otherwise saves the changed fields.
+// A pin can only be saved once the location migration has been run (see columns above).
+const NO_PIN_YET = 'The map pin could not be saved because the database has not been updated for pins yet. ' +
+  'Remove the pin to save without it, or ask whoever manages the database to run the advisory location update.';
 export async function saveAdvisory(id, fields) {
-  const q = id ? sb.from('updates').update(fields).eq('id', id) : sb.from('updates').insert(fields);
-  const { data, error } = await q.select(ADVISORY).single();
+  const { data, error } = await query((cols) =>
+    (id ? sb.from('updates').update(fields).eq('id', id) : sb.from('updates').insert(fields)).select(cols).single());
+  if (error && error.code === 'PGRST204' && /'(lat|lng)'/.test(error.message)) throw new Error(NO_PIN_YET);
   if (error) throw refused(error) ? new Error(NO_RIGHTS) : error;
   window.dispatchEvent(new Event(ADVISORIES_CHANGED)); // publishing and ending come through here too
   return data;

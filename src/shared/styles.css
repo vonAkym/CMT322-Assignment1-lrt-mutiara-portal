@@ -370,6 +370,15 @@ textarea.in { resize: vertical; }
 .btn.warn { background: var(--sf); color: var(--red); border: 1px solid var(--red); }
 @media (max-width: 860px) { .fgrid, .fgrid2 { grid-template-columns: 1fr; } .acts { white-space: normal; } .acts-in { flex-wrap: wrap; } }
 
+/* Advisory location on the map: the pin picker in the staff form and the small map on the advisory page.
+   The map itself is styled by the Module 2 map styles (.lmap); these only make it smaller and framed. */
+fieldset.plain { border: 0; padding: 0; margin: 0; min-width: 0; }
+fieldset.plain > legend { padding: 0; margin-bottom: 8px; font-size: 16px; font-weight: 700; }
+.amap-wrap { border: 1px solid var(--ln); border-radius: 16px; }
+.lmap.amap { height: 300px; min-height: 0; }
+.pick-find { display: flex; gap: 8px; }
+.pick-find .in { flex: 1; min-width: 0; }
+
 /* ===== Module 4: ticket table on the admin dashboard ===== */
 /* Each dropdown is as wide as its longest choice, so the whole word always shows. On narrow screens
    the table scrolls sideways inside its card instead of squeezing the columns. */

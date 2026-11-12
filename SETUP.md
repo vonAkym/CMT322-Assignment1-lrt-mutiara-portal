@@ -33,13 +33,17 @@ Free projects pause after about 7 days with no activity. Open the project or the
 2. Paste all of `supabase/migrations/20261028000000_init.sql` and click **Run**.
 3. New query again. Paste `supabase/migrations/20261108000000_advisories.sql` (Module 1 advisories) and click **Run**.
 4. New query again. Paste `supabase/migrations/20261110000000_ticket_replies.sql` (Module 4 replies and escalation) and click **Run**.
-5. New query again. Paste `supabase/seed.sql` and click **Run**.
-6. New query again. Paste `supabase/seed_advisories.sql` and click **Run**. You can run this one again any time to reset the sample advisories.
-7. New query again. Paste `supabase/seed_map.sql` (Module 2 map features) and click **Run**. Run it again whenever you re-run `seed_advisories.sql`.
-8. Open **Table Editor**. You should see zones, updates, map_features, tickets and the others.
+5. New query again. Paste `supabase/migrations/20261113000000_advisory_location.sql` (Module 1 map pin for each advisory) and click **Run**.
+6. New query again. Paste `supabase/seed.sql` and click **Run**.
+7. New query again. Paste `supabase/seed_advisories.sql` and click **Run**. You can run this one again any time to reset the sample advisories.
+8. New query again. Paste `supabase/seed_map.sql` (Module 2 map features) and click **Run**. Run it again whenever you re-run `seed_advisories.sql`.
+9. Open **Table Editor**. You should see zones, updates, map_features, tickets and the others.
 
-**Already set up before the advisories migration?** Run only steps 3, 4 and 6.
-**Already set up before the replies migration?** Run only step 4. Until it runs, the site still works, but sending a reply or escalating a ticket says the database needs the latest update.
+**Already set up before the advisories migration?** Run only steps 3, 4, 5 and 7.
+**Already set up before the replies migration?** Run only steps 4 and 5. Until step 4 runs, the site still works, but sending a reply or escalating a ticket says the database needs the latest update.
+**Already set up before the advisory location migration?** Run only step 5. Until it runs, the site still works without map pins
+(saving a pin says the database needs the update), but each page logs one refused request in the browser console,
+so `npm run test:e2e` fails until it has been run.
 
 ### Staff features without signing in (no longer needed)
 

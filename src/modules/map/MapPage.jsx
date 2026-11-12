@@ -3,7 +3,7 @@
 // come from the map_features table; stations come from line.js.
 // Drag to move, use the buttons or mouse wheel to zoom, select a marker for its details, or click any spot to report it.
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { Link, useNavigate, useSearchParams } from 'react-router';
 import L from 'leaflet';
 import PageHero from '../../shared/PageHero.jsx';
 import { useStaff } from '../../shared/staff.jsx';
@@ -26,6 +26,7 @@ const stationItem = (s) => ({
 
 export default function MapPage() {
   const navigate = useNavigate();
+  const [params] = useSearchParams();
   const staff = useStaff()?.staff;
   const box = useRef(null);        // the <div> Leaflet draws the map in
   const map = useRef(null);        // the Leaflet map
@@ -106,6 +107,19 @@ export default function MapPage() {
     setPicked(item);
     map.current.setView([item.lat, item.lng], Math.max(map.current.getZoom(), zoom));
   };
+
+  // Opened from an advisory page (Module 1): /map?at=lat,lng&name=...&advisory=id zooms to the advisory's pin.
+  useEffect(() => {
+    const at = params.get('at');
+    const [lat, lng] = at ? at.split(',').map(Number) : [];
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+    const id = params.get('advisory');
+    goTo({
+      kind: 'spot', name: params.get('name') || 'Works location', status: 'Advisory location', lat, lng,
+      detail: 'Where the works in this advisory take place.', advisory: id ? { id } : null,
+    }, 17);
+    box.current.scrollIntoView({ block: 'center' }); // on a phone the map is below the controls
+  }, [params]);
 
   // UC12: search our own markers and stations first, then real places in OpenStreetMap.
   const find = async (e) => {

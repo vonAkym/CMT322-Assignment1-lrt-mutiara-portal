@@ -9,14 +9,15 @@ import { useStaff } from '../../shared/staff.jsx';
 import { listMyAdvisories, saveAdvisory, publishAdvisory, endAdvisory, uploadAdvisoryPhoto, photoUrl, isOverdue, isOver,
   isUrgent, urgentFrom, URGENT_LEAD_DAYS } from './api.js';
 import PageHero from '../../shared/PageHero.jsx';
+import { LocationPicker } from './AdvisoryMap.jsx';
 import usePageTitle from '../../shared/usePageTitle.js';
 
 const MAX_PHOTOS = 5;
 const LEAVE = 'You have unsaved changes to this advisory. Leave without saving?';
 const STATES = [['Draft', 'Drafts'], ['Published', 'Published'], ['Ended', 'Ended']];
-// Form fields, named after their database columns.
+// Form fields, named after their database columns. lat and lng are the pin on the map ('' when there is none).
 const EMPTY = {
-  title: '', category: CATS[0], zone_id: '', location: '', starts_on: '', ends_on: '', work_hours: '',
+  title: '', category: CATS[0], zone_id: '', location: '', lat: '', lng: '', starts_on: '', ends_on: '', work_hours: '',
   severity: 'Low', status: 'Planned', body: '', detour: '', affected_businesses: '',
 };
 
@@ -137,6 +138,10 @@ export default function ManagePage() {
     });
   };
   const field = (k) => ({ value: v[k], onChange: (e) => change({ ...v, [k]: e.target.value }) });
+  const pinned = v.lat !== '' && v.lng !== '' ? { lat: +v.lat, lng: +v.lng } : null;
+  const setPin = (p) => setV((x) => ({ ...x, lat: p ? String(p.lat) : '', lng: p ? String(p.lng) : '' }));
+  // A place found by the map search fills in the Location box, unless staff already wrote something there.
+  const foundPlace = (name) => setV((x) => (x.location.trim() ? x : { ...x, location: name }));
 
   const addPhotos = (e) => {
     const problems = new Set(), next = [...added];
@@ -182,6 +187,9 @@ export default function ManagePage() {
         location: text(v.location), starts_on: v.starts_on, ends_on: v.ends_on || null, work_hours: text(v.work_hours),
         severity: v.severity, status: v.status, body: v.body.trim(), detour: text(v.detour),
         affected_businesses: text(v.affected_businesses), photo_paths: k, state,
+        // The pin is only sent when there is one, or one is being removed, so advisories without a pin still save
+        // before the database has the pin columns.
+        ...(pinned || (editing && editing.lat != null) ? { lat: pinned ? pinned.lat : null, lng: pinned ? pinned.lng : null } : {}),
       };
       const wasNew = !editing;
       const saved = await saveAdvisory(editing && editing.id, fields);
@@ -239,7 +247,6 @@ export default function ManagePage() {
           <div className="fgrid">
             <div><label htmlFor="mc">Type</label><select id="mc" className="in" {...field('category')}>{CATS.map((c) => <option key={c}>{c}</option>)}</select></div>
             <div><label htmlFor="mz">Area</label><ZoneSelect id="mz" all="All areas" value={v.zone_id} onChange={(z) => change({ ...v, zone_id: z })} /></div>
-            <div><label htmlFor="ml">Location</label><input id="ml" className="in" placeholder="Street or landmark" {...field('location')} /></div>
             <div><label htmlFor="ms1">Start date</label><input id="ms1" className="in" type="date" aria-describedby="mse" {...field('starts_on')} />{err('starts_on', 'mse')}</div>
             <div><label htmlFor="me1">End date (optional)</label><input id="me1" className="in" type="date" aria-describedby="mde" {...field('ends_on')} />{err('ends_on', 'mde')}</div>
             <div><label htmlFor="mh">Work hours</label><input id="mh" className="in" placeholder="e.g. 9 am to 5 pm, Monday to Saturday" {...field('work_hours')} /></div>
@@ -250,6 +257,12 @@ export default function ManagePage() {
               {['Planned', 'Ongoing', ...(v.status === 'Completed' ? ['Completed'] : [])].map((s) => <option key={s}>{s}</option>)}
             </select><p className="mut hint" id="msth">When the work finishes, use End on the list below.</p></div>
           </div>
+          <fieldset className="stack plain">
+            <legend>Location</legend>
+            <div><label htmlFor="ml">Where the works are, in words</label><input id="ml" className="in" placeholder="e.g. Jalan Magazine, near Komtar" aria-describedby="mlh" {...field('location')} />
+              <p className="mut hint" id="mlh">Then pin it on the map (optional), so the public can see exactly where it is.</p></div>
+            <LocationPicker value={pinned} onChange={setPin} onFound={foundPlace} key={editing ? editing.id : 'new'} />
+          </fieldset>
           <div><label htmlFor="mb">Details</label><textarea id="mb" className="in" rows={4} placeholder="What is happening, and what should people expect?" {...field('body')} /></div>
           <div className="fgrid2">
             <div><label htmlFor="md">Detour and access</label><textarea id="md" className="in" rows={3} placeholder="Detour route, pedestrian access, parking" {...field('detour')} /></div>
@@ -299,7 +312,7 @@ export default function ManagePage() {
                 <td><b>{a.title}</b>{isUrgent(a) && <> <span className="pill hot">Urgent</span></>}
                   {a.severity === 'High' && !isOver(a) && !isUrgent(a) && <> <span className="pill">Urgent from {day(urgentFrom(a), false)}</span></>}
                   {isOverdue(a) && <> <span className="pill late">Past end date</span></>}<br />
-                  <span className="mut">{a.status}{a.location ? ` · ${a.location}` : ''}</span></td>
+                  <span className="mut">{a.status}{a.location ? ` · ${a.location}` : ''}{a.lat != null ? ' · On the map' : ''}</span></td>
                 <td>{a.category}</td><td>{a.zones ? a.zones.name : 'All areas'}</td>
                 <td>{dateRange(a.starts_on, a.ends_on)}</td>{isAdmin && <td>{postedBy(a)}</td>}<td>{ago(a.updated_at)}</td>
                 <td className="acts"><div className="acts-in"><Actions a={a} busy={busyRow === a.id} onAct={onAct} /></div></td>
