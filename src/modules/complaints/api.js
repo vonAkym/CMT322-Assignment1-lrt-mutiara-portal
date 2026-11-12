@@ -1,7 +1,8 @@
 // Module 3: complaints and ticket tracking. Database calls for tickets from the public live here.
 import { sb, ok, checkPhoto, photoName } from '../../shared/supabase.js';
 
-export async function submitTicket({ category, description, location, name, anonymous, file }) {
+// zoneId is the area chosen on the form (optional); staff filter and count tickets by it (Module 4).
+export async function submitTicket({ category, description, location, zoneId, name, anonymous, file }) {
   let photoPath = null;
   if (file) {
     checkPhoto(file);
@@ -12,6 +13,7 @@ export async function submitTicket({ category, description, location, name, anon
   return ok(await sb.rpc('submit_ticket', {
     p_category: category, p_description: description, p_location: location || null,
     p_photo_path: photoPath, p_name: name || null, p_anonymous: !!anonymous,
+    ...(zoneId ? { p_zone_id: +zoneId } : {}),
   })); // returns the ticket number, e.g. LRT-2026-0001
 }
 

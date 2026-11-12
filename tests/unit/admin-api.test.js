@@ -62,3 +62,21 @@ describe('reply and escalate (UC08, UC09)', () => {
     await expect(api.replyToTicket(7, 'Hello there')).rejects.toMatchObject({ code: '42501' });
   });
 });
+
+describe('finishing Module 4 (UC10, UC12)', () => {
+  it('listTicketEvents reads every history entry, oldest first', async () => {
+    await api.listTicketEvents();
+    expect(fake.calls[0]).toEqual(['from', 'ticket_events']);
+    expect(fake.filters()).toEqual([['order', 'created_at']]);
+  });
+  it('listAccounts and setAccount call the admin-only database functions', async () => {
+    await api.listAccounts();
+    expect(fake.calls[0]).toEqual(['rpc', 'list_accounts', undefined]);
+    fake.reset();
+    await api.setAccount('u1', 'construction', '  Ravi  ');
+    expect(fake.calls[0]).toEqual(['rpc', 'set_account', { p_user: 'u1', p_role: 'construction', p_full_name: 'Ravi' }]);
+    fake.reset();
+    await api.setAccount('u1', 'resident', '');
+    expect(fake.calls[0][2].p_full_name).toBeNull();
+  });
+});

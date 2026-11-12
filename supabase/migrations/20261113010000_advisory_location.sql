@@ -1,7 +1,7 @@
 -- Module 1: the place of each advisory on the map (UC02, UC06, UC07).
 -- Staff drop a pin on a map when posting an advisory; the advisory page then shows it on a small map.
 -- Both columns are optional, so older advisories (and other modules) keep working without a pin.
--- Run once after 20261108000000_advisories.sql (SQL Editor, or: npx supabase db push).
+-- Run once after 20261113000000_admin_complete.sql (SQL Editor, or: npx supabase db push).
 
 alter table public.updates
   add column lat double precision,

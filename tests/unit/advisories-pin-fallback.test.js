@@ -1,5 +1,5 @@
 // Module 1: advisories keep working before the map pin columns exist in the database
-// (supabase/migrations/20261113000000_advisory_location.sql not run yet). Its own file, because once the site
+// (supabase/migrations/20261113010000_advisory_location.sql not run yet). Its own file, because once the site
 // has found the columns missing it stops asking for them, and that would change the other API tests.
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fake } from './helpers/fakeSupabase.js';
