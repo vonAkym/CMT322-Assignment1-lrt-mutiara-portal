@@ -1,6 +1,6 @@
 // Staff page from Module 1: My advisories (UC06 to UC08). The Module 4 ticket pages are in admin-tickets.test.jsx.
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import { Link } from 'react-router';
 import { advisory, renderPage } from './helpers/render.jsx';
 
@@ -113,6 +113,17 @@ describe('My advisories: who sees what (fix/access-advisories)', () => {
     expect(screen.getByRole('cell', { name: 'Not recorded' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Edit: Colleague' })).toBeInTheDocument();
     expect(screen.getByText(/Admin view/)).toBeInTheDocument();
+  });
+
+  it('puts each admin cell under its own heading', async () => {
+    signedIn.profile = { role: 'admin' };
+    api.listMyAdvisories.mockResolvedValue([rows[0]]);
+    renderPage(<ManagePage />, { path: '/manage' });
+    await screen.findByRole('button', { name: 'Edit: Mine' });
+    const heads = screen.getAllByRole('columnheader').map((h) => h.textContent);
+    const cells = within(screen.getAllByRole('row')[1]).getAllByRole('cell').map((c) => c.textContent);
+    expect(cells[heads.indexOf('Posted by')]).toBe('You');
+    expect(cells[heads.indexOf('Dates')]).not.toBe('You');
   });
 });
 

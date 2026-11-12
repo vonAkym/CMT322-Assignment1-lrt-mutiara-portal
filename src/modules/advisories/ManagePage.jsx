@@ -300,8 +300,8 @@ export default function ManagePage() {
                   {a.severity === 'High' && !isOver(a) && !isUrgent(a) && <> <span className="pill">Urgent from {day(urgentFrom(a), false)}</span></>}
                   {isOverdue(a) && <> <span className="pill late">Past end date</span></>}<br />
                   <span className="mut">{a.status}{a.location ? ` · ${a.location}` : ''}</span></td>
-                <td>{a.category}</td><td>{a.zones ? a.zones.name : 'All areas'}</td>{isAdmin && <td>{postedBy(a)}</td>}
-                <td>{dateRange(a.starts_on, a.ends_on)}</td><td>{ago(a.updated_at)}</td>
+                <td>{a.category}</td><td>{a.zones ? a.zones.name : 'All areas'}</td>
+                <td>{dateRange(a.starts_on, a.ends_on)}</td>{isAdmin && <td>{postedBy(a)}</td>}<td>{ago(a.updated_at)}</td>
                 <td className="acts"><div className="acts-in"><Actions a={a} busy={busyRow === a.id} onAct={onAct} /></div></td>
               </tr>
             ))}
