@@ -37,7 +37,8 @@ export async function fakeWrites(page, { ticketNo = 'LRT-2099-0001', track = nul
 
 // A pretend Supabase sign-in for `role`. The real project is never asked to sign anyone in; every other request
 // still goes to it as a visitor, so the pages show real advisories.
-export async function fakeSignIn(page, role = 'admin') {
+// name is the staff member's full name (used by the role rules: tickets can be given to a person by name).
+export async function fakeSignIn(page, role = 'admin', name = 'Test Staff') {
   const user = { id: '00000000-0000-4000-8000-000000000001', aud: 'authenticated', role: 'authenticated', email: 'staff@example.com', app_metadata: {}, user_metadata: {}, created_at: '2026-01-01T00:00:00Z' };
   const b64 = (o) => Buffer.from(JSON.stringify(o)).toString('base64url');
   const exp = Math.floor(Date.now() / 1000) + 3600;
@@ -51,8 +52,8 @@ export async function fakeSignIn(page, role = 'admin') {
   await page.route('**/auth/v1/logout*', (r) => r.fulfill({ status: 204, body: '' }));
   await page.route('**/rest/v1/profiles*', (r) => r.fulfill({
     json: r.request().url().includes('role=in.') // listStaff() asks for every staff member
-      ? [{ id: user.id, full_name: 'Test Staff', role }, { id: 'p2', full_name: 'Ravi', role: 'construction' }]
-      : { full_name: 'Test Staff', role },
+      ? [{ id: user.id, full_name: name, role }, { id: 'p2', full_name: 'Ravi', role: 'construction' }]
+      : { full_name: name, role },
   }));
   // The fake token would be refused by the real project, so other requests go as a visitor instead.
   await page.route('**/rest/v1/**', (r) => {
@@ -87,8 +88,10 @@ export async function fakeTickets(page, tickets) {
     }
     return r.fulfill({ json: [...rows].sort((a, b) => b.created_at.localeCompare(a.created_at)) });
   });
-  await page.route('**/rest/v1/ticket_events*', (r) =>
-    r.fulfill({ json: events.filter((e) => String(e.ticket_id) === param(r.request().url(), 'ticket_id')) }));
+  await page.route('**/rest/v1/ticket_events*', (r) => {
+    const id = param(r.request().url(), 'ticket_id'); // none: every entry, for the response figures
+    return r.fulfill({ json: id ? events.filter((e) => String(e.ticket_id) === id) : events });
+  });
   // UC08 and UC09: the two database functions from migration 20261110000000_ticket_replies.sql.
   const addEvent = (t, kind, note) => {
     const e = { id: events.length + 1, ticket_id: t.id, status: t.status, kind, note, created_at: new Date().toISOString() };
@@ -107,5 +110,18 @@ export async function fakeTickets(page, tickets) {
     return r.fulfill({ json: t });
   });
   rows.events = events;
+  return rows;
+}
+
+// A pretend list of accounts for Manage staff roles (UC12). Returns the list, so a test can check what was saved.
+export async function fakeAccounts(page, accounts) {
+  const rows = accounts.map((a) => ({ ...a }));
+  await page.route('**/rest/v1/rpc/list_accounts', (r) => r.fulfill({ json: rows }));
+  await page.route('**/rest/v1/rpc/set_account', (r) => {
+    const { p_user: id, p_role: role, p_full_name: name } = r.request().postDataJSON();
+    const a = rows.find((x) => x.id === id);
+    Object.assign(a, { role, full_name: name || a.full_name });
+    return r.fulfill({ json: { id, role: a.role, full_name: a.full_name } });
+  });
   return rows;
 }

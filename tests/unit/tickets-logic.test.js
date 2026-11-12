@@ -8,7 +8,7 @@ const T = [
   { id: 3, ticket_no: 'LRT-2026-0003', category: 'Noise', description: 'Generator noise', location: null, reporter_name: 'Mei Ling', status: 'Resolved', priority: 'Low', assigned_to: 'Aisyah' },
 ];
 const ids = (list) => list.map((t) => t.id);
-const none = { q: '', category: '', status: '', priority: '', assigned: '', escalated: '' };
+const none = { q: '', category: '', zone: '', status: '', priority: '', assigned: '', escalated: '' };
 
 describe('filterTickets', () => {
   it('returns every ticket with no filters', () => { expect(ids(filterTickets(T, none))).toEqual([1, 2, 3]); });

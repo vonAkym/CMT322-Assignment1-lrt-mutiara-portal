@@ -1,11 +1,15 @@
 // Ticket page (UC04): everything about one ticket (description, location, photo, reporter, status history),
 // and the staff controls for it: priority (UC05), assignee (UC06), status (UC07), a reply the resident
 // reads when tracking the ticket (UC08), and escalation to the government (UC09).
+// What a person may change depends on their role (ticketRights in tickets.js; the database checks the same rule).
 // Address: #/admin/tickets/LRT-2026-0001
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useParams } from 'react-router';
+import { useZones } from '../../shared/ZoneSelect.jsx';
+import { useStaff } from '../../shared/staff.jsx';
+import usePageTitle from '../../shared/usePageTitle.js';
 import { escalateTicket, getTicket, listStaff, replyToTicket, ticketPhotoUrl, updateTicket } from './api.js';
-import { NOTE_MAX, PRIORITIES, STATUSES, actionError, assigneeOptions, checkNote, historyItem, reporter, submittedAt } from './tickets.js';
+import { NOTE_MAX, PRIORITIES, STATUSES, actionError, assigneeOptions, checkNote, historyItem, reporter, submittedAt, ticketRights } from './tickets.js';
 
 const Para = ({ text }) => text.split('\n').map((line, i) => <span key={i}>{i > 0 && <br />}{line}</span>);
 const STATUS_PILL = { 'In progress': 'on', Resolved: 'dn' };
@@ -57,6 +61,9 @@ export default function TicketPage() {
   const { no } = useParams();
   const { state } = useLocation();
   const back = `/admin${state?.back || ''}`; // back to the dashboard with the same filters
+  const { profile } = useStaff();
+  const zones = useZones();
+  usePageTitle(`Ticket ${no}`);
 
   const [t, setT] = useState(undefined); // undefined while loading, null when not found
   const [loadErr, setLoadErr] = useState(false);
@@ -110,7 +117,7 @@ export default function TicketPage() {
       setMsg({ ok: true, text: 'Changes saved.' });
     } catch (err) {
       console.error(err);
-      setMsg({ ok: false, text: 'Could not save the changes. Please try again.' });
+      setMsg({ ok: false, text: actionError(err, 'save the changes') });
     } finally {
       setSaving(false);
     }
@@ -133,6 +140,8 @@ export default function TicketPage() {
   };
 
   const step = STATUSES.indexOf(t.status);
+  const r = ticketRights(profile, t);
+  const zone = t.zone_id == null ? 'Not given' : (zones.find((z) => z.id === t.zone_id) || {}).name || `Area ${t.zone_id}`;
   return (
     <section>
       <p className="tback"><Link to={back}>← All tickets</Link></p>
@@ -166,8 +175,10 @@ export default function TicketPage() {
             </ol>
           </div>
           <div className="card stack"><h2>Reply to the resident</h2>
-            <NoteForm id="rr" label="Your reply" what="reply" button="Send reply" busyLabel="Sending…" onSend={reply}
-              help="The resident reads this on the Feedback page when they track this ticket, so write it for them." />
+            {r.handle ? (
+              <NoteForm id="rr" label="Your reply" what="reply" button="Send reply" busyLabel="Sending…" onSend={reply}
+                help="The resident reads this on the Feedback page when they track this ticket, so write it for them." />
+            ) : <p className="mut">Only the staff this ticket is assigned to, or an admin, can reply.</p>}
           </div>
         </div>
         <aside className="stack">
@@ -175,6 +186,7 @@ export default function TicketPage() {
             <dl className="facts">
               <dt>Category</dt><dd>{t.category}</dd>
               <dt>Location</dt><dd>{t.location || 'Not given'}</dd>
+              <dt>Area</dt><dd>{zone}</dd>
               <dt>Reported by</dt><dd>{reporter(t)}</dd>
               <dt>Submitted</dt><dd>{submittedAt(t.created_at)}</dd>
               <dt>Assigned to</dt><dd>{t.assigned_to || 'Unassigned'}</dd>
@@ -185,15 +197,16 @@ export default function TicketPage() {
           </div>
           <form className="card stack" onSubmit={save}>
             <h2>Manage this ticket</h2>
+            {!r.manage && <p className="mut small">{r.handle ? 'You can change the status. Priority and assignment are set by an admin.' : 'This ticket is not assigned to you, so it is read-only for you.'}</p>}
             <div><label htmlFor="mp">Priority</label>
-              <select id="mp" className="in" value={v.priority} onChange={set('priority')}>{PRIORITIES.map((p) => <option key={p}>{p}</option>)}</select></div>
+              <select id="mp" className="in" value={v.priority} disabled={!r.manage} onChange={set('priority')}>{PRIORITIES.map((p) => <option key={p}>{p}</option>)}</select></div>
             <div><label htmlFor="ma">Assigned to</label>
-              <select id="ma" className="in" value={v.assigned_to} onChange={set('assigned_to')}>
+              <select id="ma" className="in" value={v.assigned_to} disabled={!r.manage} onChange={set('assigned_to')}>
                 <option value="">Unassigned</option>
                 {assigneeOptions(staff, t.assigned_to).map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
               </select></div>
             <div><label htmlFor="mst">Status</label>
-              <select id="mst" className="in" value={v.status} onChange={set('status')}>{STATUSES.map((s) => <option key={s}>{s}</option>)}</select></div>
+              <select id="mst" className="in" value={v.status} disabled={!r.handle} onChange={set('status')}>{STATUSES.map((s) => <option key={s}>{s}</option>)}</select></div>
             <button className="btn" type="submit" style={{ alignSelf: 'flex-start' }} disabled={!changed || saving}>{saving ? 'Saving…' : 'Save changes'}</button>
             {msg && <p className={msg.ok ? 'ok' : 'err'} role={msg.ok ? 'status' : 'alert'}>{msg.text}</p>}
           </form>
@@ -203,6 +216,8 @@ export default function TicketPage() {
                 <p>Escalated on {submittedAt(t.escalated_at)}.</p>
                 {t.escalation_reason && <p className="mut"><b>Reason:</b> <Para text={t.escalation_reason} /></p>}
               </>
+            ) : !r.manage ? (
+              <p className="mut">Only an admin can escalate a ticket.</p>
             ) : escalating ? (
               <NoteForm id="er" label="Why does this need the government?" what="reason" button="Escalate ticket" busyLabel="Escalating…"
                 help="Only staff see the reason. The ticket is assigned to the Government Officers." warn onSend={escalate} onCancel={() => setEscalating(false)} />

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router';
 import { ROLE_NAMES, useStaff } from '../../shared/staff.jsx';
 import PageHero from '../../shared/PageHero.jsx';
+import usePageTitle from '../../shared/usePageTitle.js';
 
 // Supabase's messages, in plain words.
 function explain(err) {
@@ -15,6 +16,7 @@ function explain(err) {
 }
 
 export default function LoginPage() {
+  usePageTitle('Staff sign in');
   const { ready, staff, signIn } = useStaff();
   const navigate = useNavigate();
   const { state } = useLocation();

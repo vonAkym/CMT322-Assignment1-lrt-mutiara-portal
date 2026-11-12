@@ -14,6 +14,7 @@ vi.mock('../../src/modules/admin/api.js', () => ({
   signIn: vi.fn(), signOut: vi.fn(async () => {}), myProfile: vi.fn(async () => null),
   signUp: vi.fn(), listTickets: vi.fn(async () => []), updateTicket: vi.fn(),
   listStaff: vi.fn(async () => []), getTicket: vi.fn(async () => null), ticketPhotoUrl: vi.fn(),
+  listTicketEvents: vi.fn(async () => []), listAccounts: vi.fn(async () => []), setAccount: vi.fn(),
 }));
 vi.mock('../../src/modules/advisories/api.js', async (orig) => ({
   ...(await orig()),

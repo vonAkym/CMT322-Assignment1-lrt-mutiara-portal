@@ -43,6 +43,15 @@ export const replyToTicket = async (id, message) =>
 export const escalateTicket = async (id, reason) =>
   ok(await sb.rpc('escalate_ticket', { p_ticket_id: id, p_reason: reason.trim() }));
 
+// UC10: every history entry of every ticket, for the response-time figures.
+export const listTicketEvents = async () =>
+  ok(await sb.from('ticket_events').select('ticket_id, status, kind, created_at').order('created_at'));
+
+// UC12 (admins only): every account with its email, name and role; and changing one account's role and name.
+export const listAccounts = async () => ok(await sb.rpc('list_accounts'));
+export const setAccount = async (userId, role, fullName) =>
+  ok(await sb.rpc('set_account', { p_user: userId, p_role: role, p_full_name: fullName?.trim() || null }));
+
 // Ticket photos are private. Staff get a link that works for one hour.
 export async function ticketPhotoUrl(path) {
   const { data, error } = await sb.storage.from('ticket-photos').createSignedUrl(path, 3600);
