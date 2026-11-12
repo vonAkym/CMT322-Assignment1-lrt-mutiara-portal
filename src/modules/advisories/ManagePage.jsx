@@ -10,16 +10,28 @@ import { listMyAdvisories, saveAdvisory, publishAdvisory, endAdvisory, uploadAdv
   isUrgent, urgentFrom, URGENT_LEAD_DAYS } from './api.js';
 import PageHero from '../../shared/PageHero.jsx';
 import { LocationPicker } from './AdvisoryMap.jsx';
+import WorkHoursField, { NO_HOURS, hoursOf, hoursUsed, hoursProblem, hoursFieldId } from './WorkHoursField.jsx';
+import { formatHours, parseHours } from './workHours.js';
 import usePageTitle from '../../shared/usePageTitle.js';
 
 const MAX_PHOTOS = 5;
 const LEAVE = 'You have unsaved changes to this advisory. Leave without saving?';
 const STATES = [['Draft', 'Drafts'], ['Published', 'Published'], ['Ended', 'Ended']];
 // Form fields, named after their database columns. lat and lng are the pin on the map ('' when there is none).
+// The work hours are picked in wh_from, wh_to, wh_days and wh_all (see WorkHoursField.jsx) and saved as work_hours.
 const EMPTY = {
   title: '', category: CATS[0], zone_id: '', location: '', lat: '', lng: '', starts_on: '', ends_on: '', work_hours: '',
-  severity: 'Low', status: 'Planned', body: '', detour: '', affected_businesses: '',
+  ...NO_HOURS, severity: 'Low', status: 'Planned', body: '', detour: '', affected_businesses: '',
 };
+
+// The form values for a saved advisory. Work hours in the site's own format fill the pickers; older text stays in
+// work_hours, where the form shows it until staff replace it.
+function formValues(a) {
+  const values = Object.fromEntries(Object.keys(EMPTY).map((k) => [k, a[k] == null ? '' : String(a[k])]));
+  const h = parseHours(a.work_hours);
+  if (!h) return values;
+  return { ...values, work_hours: '', wh_from: h.from, wh_to: h.to, wh_days: h.days.join(','), wh_all: h.allDay ? '1' : '' };
+}
 
 // Returns the problems in the form, e.g. { title: '...' }. Empty when the form is fine.
 function validate(v) {
@@ -27,6 +39,8 @@ function validate(v) {
   if (title.length < 3 || title.length > 150) e.title = 'Enter a title of 3 to 150 characters.';
   if (!v.starts_on) e.starts_on = 'Choose the start date.';
   if (v.starts_on && v.ends_on && v.ends_on < v.starts_on) e.ends_on = 'The end date must be on or after the start date.';
+  const hours = hoursProblem(v);
+  if (hours) e.work_hours = hours;
   return e;
 }
 const FIELD_ID = { title: 'mt', starts_on: 'ms1', ends_on: 'me1' };
@@ -105,7 +119,7 @@ export default function ManagePage() {
   const openForm = (a) => {
     if (!okToLeave()) return;
     added.forEach((p) => URL.revokeObjectURL(p.preview));
-    const values = a ? Object.fromEntries(Object.keys(EMPTY).map((k) => [k, a[k] == null ? '' : String(a[k])])) : { ...EMPTY, starts_on: todayISO() };
+    const values = a ? formValues(a) : { ...EMPTY, starts_on: todayISO() };
     const photos = a ? [...(a.photo_paths || [])] : [];
     setEditing(a || null);
     setV(values);
@@ -169,8 +183,8 @@ export default function ManagePage() {
     const state = submitter && submitter.value === 'Draft' && !published ? 'Draft' : 'Published';
     const problems = validate(v);
     setErrs(problems);
-    const bad = ['title', 'starts_on', 'ends_on'].find((k) => problems[k]);
-    if (bad) { document.getElementById(FIELD_ID[bad]).focus(); return; }
+    const bad = ['title', 'starts_on', 'ends_on', 'work_hours'].find((k) => problems[k]);
+    if (bad) { document.getElementById(bad === 'work_hours' ? hoursFieldId(v) : FIELD_ID[bad]).focus(); return; }
     setFormErr('');
     setSaving(submitter ? submitter.value : 'Published');
     // Upload new photos one by one. Each uploaded photo moves to "kept", so a retry does not upload it twice.
@@ -184,7 +198,8 @@ export default function ManagePage() {
       const text = (s) => s.trim() || null;
       const fields = {
         title: v.title.trim(), category: v.category, zone_id: v.zone_id ? +v.zone_id : null,
-        location: text(v.location), starts_on: v.starts_on, ends_on: v.ends_on || null, work_hours: text(v.work_hours),
+        location: text(v.location), starts_on: v.starts_on, ends_on: v.ends_on || null,
+        work_hours: hoursUsed(v) ? formatHours(hoursOf(v)) : text(v.work_hours),
         severity: v.severity, status: v.status, body: v.body.trim(), detour: text(v.detour),
         affected_businesses: text(v.affected_businesses), photo_paths: k, state,
         // The pin is only sent when there is one, or one is being removed, so advisories without a pin still save
@@ -249,7 +264,6 @@ export default function ManagePage() {
             <div><label htmlFor="mz">Area</label><ZoneSelect id="mz" all="All areas" value={v.zone_id} onChange={(z) => change({ ...v, zone_id: z })} /></div>
             <div><label htmlFor="ms1">Start date</label><input id="ms1" className="in" type="date" aria-describedby="mse" {...field('starts_on')} />{err('starts_on', 'mse')}</div>
             <div><label htmlFor="me1">End date (optional)</label><input id="me1" className="in" type="date" aria-describedby="mde" {...field('ends_on')} />{err('ends_on', 'mde')}</div>
-            <div><label htmlFor="mh">Work hours</label><input id="mh" className="in" placeholder="e.g. 9 am to 5 pm, Monday to Saturday" {...field('work_hours')} /></div>
             <div><label htmlFor="mv">Severity</label><select id="mv" className="in" aria-describedby="mvh" {...field('severity')}>{SEVERITY.map((s) => <option key={s}>{s}</option>)}</select><p className="mut hint" id="mvh">High shows it in the urgent banner on every page, from {URGENT_LEAD_DAYS} days before it starts.</p></div>
             <div><label htmlFor="mst">Work status</label><select id="mst" className="in" aria-describedby="msth" {...field('status')}>
               {/* Finished work is ended with the End button, which also marks it Completed. "Completed" only shows
@@ -257,6 +271,7 @@ export default function ManagePage() {
               {['Planned', 'Ongoing', ...(v.status === 'Completed' ? ['Completed'] : [])].map((s) => <option key={s}>{s}</option>)}
             </select><p className="mut hint" id="msth">When the work finishes, use End on the list below.</p></div>
           </div>
+          <WorkHoursField v={v} onChange={change} error={errs.work_hours} />
           <fieldset className="stack plain">
             <legend>Location</legend>
             <div><label htmlFor="ml">Where the works are, in words</label><input id="ml" className="in" placeholder="e.g. Jalan Magazine, near Komtar" aria-describedby="mlh" {...field('location')} />

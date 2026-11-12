@@ -111,3 +111,28 @@ export async function fakeTickets(page, tickets) {
   rows.events = events;
   return rows;
 }
+
+// A pretend advisories table holding `rows` (Module 1), so tests neither depend on nor change the real one.
+// A save answers with `base` plus the saved fields. Returns the list of saved bodies, for checking.
+export async function fakeAdvisories(page, rows, base = {}) {
+  const saves = [];
+  await page.route('**/rest/v1/updates*', async (r) => {
+    const req = r.request();
+    const one = (req.headers().accept || '').includes('vnd.pgrst.object');
+    if (req.method() === 'GET') return r.fulfill({ json: one ? rows[0] || null : rows });
+    const body = req.postDataJSON();
+    saves.push(body);
+    return r.fulfill({ status: req.method() === 'POST' ? 201 : 200, json: { ...base, id: 9002, ...body } });
+  });
+  return saves;
+}
+
+// Signs in with the pretend account (see fakeSignIn) through the real sign-in form.
+export async function signInAsStaff(page) {
+  await open(page, '/login');
+  const form = page.locator('main form');
+  await form.getByLabel('Email').fill('staff@example.com');
+  await form.getByLabel('Password').fill('correct-password');
+  await form.getByRole('button', { name: 'Sign in' }).click();
+  await expect(page.locator('h1')).not.toHaveText('Staff sign in');
+}

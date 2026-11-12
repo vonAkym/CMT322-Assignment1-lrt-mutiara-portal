@@ -2,12 +2,13 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import Icon from '../../shared/Icon.jsx';
-import { dateRange, ago } from '../../shared/util.js';
+import { dateRange, ago, todayISO } from '../../shared/util.js';
 import { reportUrl } from '../complaints/ReportPage.jsx';
 import { getAdvisory, photoUrl, isOver, isUrgent } from './api.js';
 import usePageTitle from '../../shared/usePageTitle.js';
 import { where } from './AdvisoryCard.jsx';
 import { PlaceMap, mapUrl } from './AdvisoryMap.jsx';
+import { hoursNow } from './workHours.js';
 
 // Plain text from the database, with its line breaks kept.
 const Para = ({ text }) => text.split('\n').map((line, i) => <span key={i}>{i > 0 && <br />}{line}</span>);
@@ -38,11 +39,14 @@ function Advisory({ a }) {
   const navigate = useNavigate();
   const ended = isOver(a); // ended by staff, or past its end date
   const pill = ended ? 'dn' : a.status === 'Ongoing' ? 'on' : '';
+  // The works are going on right now: published, between the start and end date, and inside the work hours.
+  const now = !ended && a.state === 'Published' && (!a.starts_on || a.starts_on <= todayISO()) && hoursNow(a.work_hours) === true;
   return (
     <>
       <div className="adv-head">
         <p>
           {isUrgent(a) && <><span className="pill hot">Urgent</span> </>}
+          {now && <><span className="pill on">Works happening now</span> </>}
           <span className={`pill ${pill}`}>{ended ? 'Ended' : a.status}</span> <span className="pill">{a.category}</span>
         </p>
         <h1>{a.title}</h1>

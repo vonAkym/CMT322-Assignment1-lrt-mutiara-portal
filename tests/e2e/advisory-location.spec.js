@@ -1,6 +1,6 @@
 // Module 1: the place of an advisory on the map (feat/advisory-map-location).
 // The advisories here are fake replies, so the tests do not depend on what is in the database or change it.
-import { test, expect, open, fakeSignIn } from './helpers.js';
+import { test, expect, open, fakeSignIn, fakeAdvisories, signInAsStaff } from './helpers.js';
 
 const PINNED = {
   id: 9001, title: 'Lane closure near Komtar', body: 'One lane closed for piling.', category: 'Road closure',
@@ -10,22 +10,8 @@ const PINNED = {
   created_at: '2026-11-01T00:00:00Z', updated_at: '2026-11-10T00:00:00Z',
 };
 
-// A pretend advisories table holding `rows`. Returns the bodies of the saves it received.
-async function fakeAdvisories(page, rows) {
-  const saves = [];
-  await page.route('**/rest/v1/updates*', async (r) => {
-    const req = r.request();
-    const one = (req.headers().accept || '').includes('vnd.pgrst.object');
-    if (req.method() === 'GET') return r.fulfill({ json: one ? rows[0] || null : rows });
-    const body = req.postDataJSON();
-    saves.push(body);
-    return r.fulfill({ status: req.method() === 'POST' ? 201 : 200, json: { ...PINNED, id: 9002, ...body } });
-  });
-  return saves;
-}
-
 test('the advisory page shows where the works are, and opens the full map at that spot', async ({ page, errors }) => {
-  await fakeAdvisories(page, [PINNED]);
+  await fakeAdvisories(page, [PINNED], PINNED);
   await open(page, `/advisories/${PINNED.id}`);
   await expect(page.getByRole('heading', { name: 'Where the works are' })).toBeVisible();
   await expect(page.getByRole('region', { name: /Map showing where the works are/ }).locator('.mpin-spot')).toBeVisible();
@@ -38,11 +24,8 @@ test('the advisory page shows where the works are, and opens the full map at tha
 
 test('staff drop a pin on the map when posting an advisory', async ({ page, errors }) => {
   await fakeSignIn(page, 'construction');
-  const saves = await fakeAdvisories(page, []);
-  await open(page, '/login');
-  await page.locator('main form').getByLabel('Email').fill('staff@example.com');
-  await page.locator('main form').getByLabel('Password').fill('correct-password');
-  await page.locator('main form').getByRole('button', { name: 'Sign in' }).click();
+  const saves = await fakeAdvisories(page, [], PINNED);
+  await signInAsStaff(page);
   await page.goto('./#/manage');
   await page.getByRole('button', { name: '+ New advisory' }).click();
   await page.getByLabel(/^Title/).fill('Lane closure near Komtar');
