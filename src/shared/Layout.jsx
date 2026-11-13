@@ -5,13 +5,18 @@ import UrgentBanner from '../modules/advisories/UrgentBanner.jsx';
 import { useStaff } from './staff.jsx';
 import Logo from './Logo.jsx';
 
+// The public pages. Signed-in staff get the staff pages instead (they can sign out to see the site as the public does;
+// the footer and links inside pages still reach the public pages).
 const MENU = [['/advisories', 'Advisories'], ['/schedule', 'Schedule'], ['/map', 'Map'], ['/report', 'Report'], ['/track', 'Feedback']];
-const STAFF_MENU = [['/manage', 'Manage advisories'], ['/admin', 'Admin']];
+// [address, label, admins only]. Admin is only marked when on /admin itself, not on Manage staff (/admin/staff).
+const STAFF_MENU = [['/admin', 'Admin'], ['/manage', 'Manage advisories'], ['/map/edit', 'Edit map'], ['/admin/staff', 'Manage staff', true]];
 
 const Brand = () => <Link className="brand" to="/" aria-label="MutiaraInfo, home"><Logo /></Link>;
 
 export default function Layout() {
-  const { staff, signOut } = useStaff();
+  const { staff, profile, signOut } = useStaff();
+  const isAdmin = !!profile && profile.role === 'admin';
+  const menu = staff ? STAFF_MENU.filter(([, , adminOnly]) => !adminOnly || isAdmin) : MENU;
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [open, setOpen] = useState(false); // the menu on small screens
@@ -38,7 +43,7 @@ export default function Layout() {
       <header className="top"><div className="w">
         <Brand />
         <nav id="site-menu" className={open ? 'open' : ''} aria-label="Main">
-          {[...MENU, ...(staff ? STAFF_MENU : [])].map(([to, label]) => <NavLink key={to} to={to}>{label}</NavLink>)}
+          {menu.map(([to, label]) => <NavLink key={to} to={to} end={to === '/admin'}>{label}</NavLink>)}
         </nav>
         <button type="button" className="btn o sp" onClick={toggleSignIn}>{staff ? 'Sign out' : 'Sign in'}</button>
         <button type="button" className="mbtn" aria-expanded={open} aria-controls="site-menu" aria-label="Menu" onClick={() => setOpen(!open)}>
