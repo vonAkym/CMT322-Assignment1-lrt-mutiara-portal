@@ -86,8 +86,8 @@ export default function ManagePage() {
         <p className="note"><b>{overdue} published advisor{overdue === 1 ? 'y has' : 'ies have'} passed the end date.</b> The public
           already sees {overdue === 1 ? 'it' : 'them'} as ended. Press End if the work has finished, or Edit to move the end date if it is running late.</p>
       )}
-      {okMsg && <p className="ok" role="status">{okMsg}</p>}
-      {listErr && <p className="err" role="alert">{listErr}</p>}
+      {okMsg && <p className="ok" id="mok" role="status">{okMsg}</p>}
+      {listErr && <p className="err" id="merr" role="alert">{listErr}</p>}
       <div className="card" style={{ padding: 0, overflowX: 'auto' }}>
         <table>
           <thead><tr><th>Advisory</th><th>Type</th><th>Area</th><th>Dates</th>{isAdmin && <th>Posted by</th>}<th>Updated</th><th><span className="vh">Actions</span></th></tr></thead>
