@@ -1,7 +1,7 @@
 // src/modules/admin/tickets.js, the parts added to finish Module 4: role rules (Figure 4), the area filter,
 // response time (UC10) and the summary report file (UC11).
 import { describe, expect, it } from 'vitest';
-import { duration, filterTickets, firstResponse, responseStats, summaryReport, ticketRights, toCsv } from '../../src/modules/admin/tickets.js';
+import { duration, filterTickets, firstResponse, responseStats, summaryReport, ticketRights, toCsv, visibleTickets } from '../../src/modules/admin/tickets.js';
 
 const t = (o) => ({ id: 1, ticket_no: 'LRT-2026-0001', category: 'Noise', description: 'x', status: 'Submitted', priority: 'Medium', assigned_to: null, escalated_at: null, zone_id: null, created_at: '2026-11-01T00:00:00Z', ...o });
 const none = { q: '', category: '', zone: '', status: '', priority: '', assigned: '', escalated: '' };
@@ -45,6 +45,22 @@ describe('filterTickets: area and "tickets I can work on"', () => {
     expect(ids(filterTickets(list, { ...none, assigned: 'mine' }, BUILDER))).toEqual([1, 3]);
     expect(ids(filterTickets(list, { ...none, assigned: 'mine' }, OFFICER))).toEqual([]);
   });
+});
+
+describe('visibleTickets: Construction Team and Government Officers see only the tickets given to them', () => {
+  const list = [
+    t({ id: 1 }),                                                   // unassigned
+    t({ id: 2, assigned_to: 'Construction Team' }),
+    t({ id: 3, assigned_to: 'Ravi' }),                              // given to Ravi by name
+    t({ id: 4, assigned_to: 'Government Officers' }),
+    t({ id: 5, escalated_at: '2026-11-03T00:00:00Z', assigned_to: 'Government Officers' }),
+    t({ id: 6, assigned_to: 'Siti' }),                              // given to Siti by name
+  ];
+  const ids = (l) => l.map((x) => x.id);
+  it('admins see every ticket', () => expect(ids(visibleTickets(list, ADMIN))).toEqual([1, 2, 3, 4, 5, 6]));
+  it('the Construction Team sees its team’s tickets and its own', () => expect(ids(visibleTickets(list, BUILDER))).toEqual([2, 3]));
+  it('Government Officers see escalated, their team’s and their own', () => expect(ids(visibleTickets(list, OFFICER))).toEqual([4, 5, 6]));
+  it('nobody else sees any', () => expect(visibleTickets(list, { role: 'resident' })).toEqual([]));
 });
 
 describe('response time (UC10)', () => {

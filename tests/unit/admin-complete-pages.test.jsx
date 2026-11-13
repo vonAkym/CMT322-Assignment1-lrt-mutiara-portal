@@ -110,26 +110,27 @@ describe('dashboard controls follow the role (Figure 4)', () => {
     await user.click(screen.getByRole('button', { name: 'Manage staff roles' }));
     expect(screen.getByTestId('where')).toHaveTextContent('/admin/staff');
   });
-  it('the Construction Team changes status only on its own tickets, and never priority or assignee', async () => {
+  it('the Construction Team sees only its own tickets, changes their status, and never priority or assignee', async () => {
     me.profile = { full_name: 'Ravi', role: 'construction' };
     dashboard();
-    await screen.findByRole('link', { name: 'LRT-2026-0001' });
-    expect(screen.getByText(/As Construction Team you can change the status/)).toBeInTheDocument();
-    expect(screen.getByLabelText('Status for LRT-2026-0002')).toBeEnabled();   // given to the Construction Team
-    expect(screen.getByLabelText('Status for LRT-2026-0001')).toBeDisabled();  // unassigned
-    expect(screen.getByLabelText('Status for LRT-2026-0003')).toBeDisabled();  // escalated
+    await screen.findByRole('link', { name: 'LRT-2026-0002' });
+    expect(screen.getByText(/As Construction Team you see, and can change the status/)).toBeInTheDocument();
+    expect(rows()).toHaveLength(1);                                            // only the one given to the Construction Team
+    expect(screen.queryByRole('link', { name: 'LRT-2026-0001' })).not.toBeInTheDocument(); // unassigned
+    expect(screen.queryByRole('link', { name: 'LRT-2026-0003' })).not.toBeInTheDocument(); // escalated
+    expect(screen.getByLabelText('Status for LRT-2026-0002')).toBeEnabled();
     expect(screen.getByLabelText('Priority for LRT-2026-0002')).toBeDisabled();
     expect(screen.getByLabelText('Assignee for LRT-2026-0002')).toBeDisabled();
     expect(screen.queryByRole('button', { name: 'Manage staff roles' })).not.toBeInTheDocument();
   });
-  it('“Tickets I can work on” shows a Government Officer the escalated ticket', async () => {
+  it('a Government Officer sees only the escalated ticket, and the figures count only that one', async () => {
     me.profile = { full_name: 'Siti', role: 'government' };
-    const { user } = dashboard();
-    await screen.findByRole('link', { name: 'LRT-2026-0001' });
-    await user.selectOptions(screen.getByLabelText('Assigned to'), 'Tickets I can work on');
+    dashboard();
+    await screen.findByRole('link', { name: 'LRT-2026-0003' });
     expect(rows()).toHaveLength(1);
-    expect(within(rows()[0]).getByRole('link')).toHaveTextContent('LRT-2026-0003');
     expect(screen.getByLabelText('Status for LRT-2026-0003')).toBeEnabled();
+    expect(screen.queryByRole('option', { name: 'Tickets I can work on' })).not.toBeInTheDocument();
+    expect(card('Total')).toHaveTextContent('1');
   });
   it('shows the database’s reason when it refuses a change', async () => {
     api.updateTicket.mockRejectedValue({ code: '42501', message: 'This ticket is not assigned to you' });
@@ -159,13 +160,13 @@ describe('ticket page follows the role (Figure 4)', () => {
     expect(screen.getByText('Only an admin can escalate a ticket.')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /^Escalate/ })).not.toBeInTheDocument();
   });
-  it('a ticket not assigned to them is read-only', async () => {
+  it('a ticket not given to them does not open', async () => {
     me.profile = { full_name: 'Ravi', role: 'construction' };
     open(ticket({ assigned_to: null }));
-    expect(await screen.findByText(/read-only for you/)).toBeInTheDocument();
-    expect(screen.getByLabelText('Status')).toBeDisabled();
-    expect(screen.queryByLabelText('Your reply')).not.toBeInTheDocument();
-    expect(screen.getByText(/Only the staff this ticket is assigned to/)).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'This ticket is not given to you' })).toBeInTheDocument();
+    expect(screen.queryByLabelText('Status')).not.toBeInTheDocument();
+    expect(screen.queryByText(/The complaint/)).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Back to my tickets' })).toHaveAttribute('href', '/admin');
   });
 });
 

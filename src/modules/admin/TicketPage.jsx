@@ -139,8 +139,18 @@ export default function TicketPage() {
     setNotice('Ticket escalated to the government officers.');
   };
 
-  const step = STATUSES.indexOf(t.status);
   const r = ticketRights(profile, t);
+  // The Construction Team and Government Officers only open the tickets given to them (as on the dashboard).
+  if (!r.handle) {
+    return (
+      <section className="stack" style={{ padding: '40px 0' }}>
+        <h1>This ticket is not given to you</h1>
+        <p className="mut">You can only open the complaints given to you. An admin assigns them.</p>
+        <Link className="btn" style={{ alignSelf: 'flex-start' }} to={back}>Back to my tickets</Link>
+      </section>
+    );
+  }
+  const step = STATUSES.indexOf(t.status);
   const zone = t.zone_id == null ? 'Not given' : (zones.find((z) => z.id === t.zone_id) || {}).name || `Area ${t.zone_id}`;
   return (
     <section>
