@@ -9,7 +9,7 @@ import Logo from './Logo.jsx';
 // the footer and links inside pages still reach the public pages).
 const MENU = [['/advisories', 'Advisories'], ['/schedule', 'Schedule'], ['/map', 'Map'], ['/report', 'Report'], ['/track', 'Feedback']];
 // [address, label, admins only]. Admin is only marked when on /admin itself, not on Manage staff (/admin/staff).
-const STAFF_MENU = [['/admin', 'Admin'], ['/manage', 'Manage advisories'], ['/map/edit', 'Edit map'], ['/admin/staff', 'Manage staff', true]];
+const STAFF_MENU = [['/admin', 'Admin'], ['/map/edit', 'Edit map'], ['/manage', 'Manage advisories'], ['/admin/staff', 'Manage staff', true]];
 
 const Brand = () => <Link className="brand" to="/" aria-label="MutiaraInfo, home"><Logo /></Link>;
 
