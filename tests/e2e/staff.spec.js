@@ -62,7 +62,7 @@ test.describe('with a pretend staff account', () => {
     if (isPhone(page)) await page.getByRole('button', { name: 'Menu' }).click();
     const nav = page.getByRole('navigation', { name: 'Main' });
     await expect(nav.getByRole('link', { name: 'Manage advisories' })).toBeVisible();
-    await expect(nav.getByRole('link', { name: 'Admin' })).toBeVisible();
+    await expect(nav.getByRole('link', { name: 'Construction', exact: true })).toBeVisible(); // named after the role
     await expect(nav.getByRole('link', { name: 'Edit map' })).toBeVisible();
     // Staff see the staff pages only; Manage staff is for admins.
     await expect(nav.getByRole('link', { name: 'Advisories', exact: true })).toHaveCount(0);

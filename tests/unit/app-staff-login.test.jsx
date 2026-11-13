@@ -71,7 +71,13 @@ describe('staff pages are protected', () => {
     await openApp('#/admin', { signedInAs: { full_name: 'C', role: 'construction' } });
     await screen.findByRole('heading', { level: 1, name: 'Operational dashboard' });
     const nav = within(header()).getByRole('navigation', { name: 'Main' });
-    expect(within(nav).getAllByRole('link').map((l) => l.textContent)).toEqual(['Admin', 'Edit map', 'Manage advisories']);
+    expect(within(nav).getAllByRole('link').map((l) => l.textContent)).toEqual(['Construction', 'Edit map', 'Manage advisories']);
+  });
+  it('names the dashboard link after the role: Government Officers see "Government"', async () => {
+    await openApp('#/admin', { signedInAs: { full_name: 'G', role: 'government' } });
+    await screen.findByRole('heading', { level: 1, name: 'Operational dashboard' });
+    const nav = within(header()).getByRole('navigation', { name: 'Main' });
+    expect(within(nav).getAllByRole('link').map((l) => l.textContent)).toEqual(['Government', 'Edit map', 'Manage advisories']);
   });
   it('does not let a resident account into staff pages', async () => {
     await openApp('#/admin', { signedInAs: { full_name: 'R', role: 'resident' } });

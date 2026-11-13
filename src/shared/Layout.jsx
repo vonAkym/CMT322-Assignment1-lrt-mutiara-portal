@@ -8,8 +8,11 @@ import Logo from './Logo.jsx';
 // The public pages. Signed-in staff get the staff pages instead (they can sign out to see the site as the public does;
 // the footer and links inside pages still reach the public pages).
 const MENU = [['/advisories', 'Advisories'], ['/schedule', 'Schedule'], ['/map', 'Map'], ['/report', 'Report'], ['/track', 'Feedback']];
-// [address, label, admins only]. Admin is only marked when on /admin itself, not on Manage staff (/admin/staff).
-const STAFF_MENU = [['/admin', 'Admin'], ['/map/edit', 'Edit map'], ['/manage', 'Manage advisories'], ['/admin/staff', 'Manage staff', true]];
+// [address, label, admins only]. The dashboard link is only marked when on /admin itself, not on Manage staff (/admin/staff).
+// Its label is the signed-in person's role (see DASHBOARD).
+const STAFF_MENU = [['/admin', ''], ['/map/edit', 'Edit map'], ['/manage', 'Manage advisories'], ['/admin/staff', 'Manage staff', true]];
+// The dashboard link says who is signed in: Admin, Construction or Government.
+const DASHBOARD = { admin: 'Admin', construction: 'Construction', government: 'Government' };
 
 const Brand = () => <Link className="brand" to="/" aria-label="MutiaraInfo, home"><Logo /></Link>;
 
@@ -43,7 +46,9 @@ export default function Layout() {
       <header className="top"><div className="w">
         <Brand />
         <nav id="site-menu" className={open ? 'open' : ''} aria-label="Main">
-          {menu.map(([to, label]) => <NavLink key={to} to={to} end={to === '/admin'}>{label}</NavLink>)}
+          {menu.map(([to, label]) => (
+            <NavLink key={to} to={to} end={to === '/admin'}>{to === '/admin' ? DASHBOARD[profile?.role] || 'Dashboard' : label}</NavLink>
+          ))}
         </nav>
         <button type="button" className="btn o sp" onClick={toggleSignIn}>{staff ? 'Sign out' : 'Sign in'}</button>
         <button type="button" className="mbtn" aria-expanded={open} aria-controls="site-menu" aria-label="Menu" onClick={() => setOpen(!open)}>
