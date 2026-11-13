@@ -166,7 +166,7 @@ export default function AdminPage() {
           <div className="ctas" style={{ justifyContent: 'flex-start', margin: 0 }}>
             <button type="button" className="btn" onClick={exportCsv} disabled={!tickets}>Download report (CSV)</button>
             <button type="button" className="btn s" onClick={() => window.print()} disabled={!tickets}>Print or save as PDF</button>
-            <button type="button" className="btn s" onClick={() => navigate('/manage')}>My advisories</button>
+            <button type="button" className="btn s" onClick={() => navigate('/manage')}>Manage advisories</button>
             {admin && <button type="button" className="btn s" onClick={() => navigate('/admin/staff')}>Manage staff roles</button>}
           </div>
         </div>

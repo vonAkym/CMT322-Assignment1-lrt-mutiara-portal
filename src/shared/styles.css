@@ -334,7 +334,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th{text-align:left;back
   .sch-head .sch-scale { display: none; }
 }
 
-/* ===== Module 1: My advisories, staff (UC06 to UC08) ===== */
+/* ===== Module 1: Manage advisories and the advisory form, staff (UC06 to UC08) ===== */
 .note { margin: 0 0 16px; padding: 12px 16px; border-radius: 10px; background: var(--c1b); color: var(--ink); font-size: 14px; }
 .note code { font-size: 13px; }
 #mform { margin-bottom: 20px; border-top: 4px solid var(--pri); }

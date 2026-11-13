@@ -1,49 +1,15 @@
-// My advisories (UC06 to UC08): staff post new advisories, edit drafts and published ones,
-// publish drafts and end advisories when the work finishes.
-import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router';
-import ZoneSelect from '../../shared/ZoneSelect.jsx';
-import { isPhotoOk } from '../../shared/supabase.js';
-import { CATS, SEVERITY, dateRange, ago, todayISO, day } from '../../shared/util.js';
+// Manage advisories (UC06 to UC08), staff only: the list of advisories by state, with buttons to view, edit,
+// publish and end them. New advisory and Edit open the form on its own page (AdvisoryFormPage.jsx), which comes
+// back here after saving with a message saying what was saved.
+import { useEffect, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router';
+import { dateRange, ago, day } from '../../shared/util.js';
 import { useStaff } from '../../shared/staff.jsx';
-import { listMyAdvisories, saveAdvisory, publishAdvisory, endAdvisory, uploadAdvisoryPhoto, photoUrl, isOverdue, isOver,
-  isUrgent, urgentFrom, URGENT_LEAD_DAYS } from './api.js';
+import { listMyAdvisories, publishAdvisory, endAdvisory, isOverdue, isOver, isUrgent, urgentFrom } from './api.js';
 import PageHero from '../../shared/PageHero.jsx';
-import { LocationPicker } from './AdvisoryMap.jsx';
-import WorkHoursField, { NO_HOURS, hoursOf, hoursUsed, hoursProblem, hoursFieldId } from './WorkHoursField.jsx';
-import { formatHours, parseHours } from './workHours.js';
 import usePageTitle from '../../shared/usePageTitle.js';
 
-const MAX_PHOTOS = 5;
-const LEAVE = 'You have unsaved changes to this advisory. Leave without saving?';
 const STATES = [['Draft', 'Drafts'], ['Published', 'Published'], ['Ended', 'Ended']];
-// Form fields, named after their database columns. lat and lng are the pin on the map ('' when there is none).
-// The work hours are picked in wh_from, wh_to, wh_days and wh_all (see WorkHoursField.jsx) and saved as work_hours.
-const EMPTY = {
-  title: '', category: CATS[0], zone_id: '', location: '', lat: '', lng: '', starts_on: '', ends_on: '', work_hours: '',
-  ...NO_HOURS, severity: 'Low', status: 'Planned', body: '', detour: '', affected_businesses: '',
-};
-
-// The form values for a saved advisory. Work hours in the site's own format fill the pickers; older text stays in
-// work_hours, where the form shows it until staff replace it.
-function formValues(a) {
-  const values = Object.fromEntries(Object.keys(EMPTY).map((k) => [k, a[k] == null ? '' : String(a[k])]));
-  const h = parseHours(a.work_hours);
-  if (!h) return values;
-  return { ...values, work_hours: '', wh_from: h.from, wh_to: h.to, wh_days: h.days.join(','), wh_all: h.allDay ? '1' : '' };
-}
-
-// Returns the problems in the form, e.g. { title: '...' }. Empty when the form is fine.
-function validate(v) {
-  const e = {}, title = v.title.trim();
-  if (title.length < 3 || title.length > 150) e.title = 'Enter a title of 3 to 150 characters.';
-  if (!v.starts_on) e.starts_on = 'Choose the start date.';
-  if (v.starts_on && v.ends_on && v.ends_on < v.starts_on) e.ends_on = 'The end date must be on or after the start date.';
-  const hours = hoursProblem(v);
-  if (hours) e.work_hours = hours;
-  return e;
-}
-const FIELD_ID = { title: 'mt', starts_on: 'ms1', ends_on: 'me1' };
 
 function Actions({ a, busy, onAct }) {
   const b = (act, label, cls = 's') => (
@@ -56,10 +22,11 @@ function Actions({ a, busy, onAct }) {
 
 export default function ManagePage() {
   const navigate = useNavigate();
-  usePageTitle('My advisories');
+  const { pathname, state: back } = useLocation(); // back: { ok, tab } after the form saved something
+  usePageTitle('Manage advisories');
   const [all, setAll] = useState([]);
-  const [tab, setTab] = useState('Published');
-  const [okMsg, setOkMsg] = useState('');
+  const [tab, setTab] = useState((back && back.tab) || 'Published');
+  const [okMsg, setOkMsg] = useState((back && back.ok) || '');
   const [listErr, setListErr] = useState('');
   const [busyRow, setBusyRow] = useState(null);
   // Admins see and manage every advisory (UC07, UC08); other staff see the ones they posted.
@@ -67,19 +34,8 @@ export default function ManagePage() {
   const isAdmin = !!profile && profile.role === 'admin';
   const postedBy = (a) => (a.created_by && user && a.created_by === user.id ? 'You' : a.posted_by || 'Not recorded');
 
-  // Form state. editing is the advisory being changed, or null for a new one.
-  const [open, setOpen] = useState(false);
-  const [editing, setEditing] = useState(null);
-  const [v, setV] = useState(EMPTY);
-  const [errs, setErrs] = useState({});
-  const [kept, setKept] = useState([]);   // photo paths already saved with the advisory
-  const [added, setAdded] = useState([]); // new photos waiting to be uploaded: { file, preview }
-  const [photoErr, setPhotoErr] = useState('');
-  const [formErr, setFormErr] = useState('');
-  const [saving, setSaving] = useState(''); // the button being saved with ('Draft' or 'Published')
-  const formRef = useRef(null);
-  const addedRef = useRef(added);
-  addedRef.current = added;
+  // The saved message shows once; a refresh or Back does not bring it back.
+  useEffect(() => { if (back) navigate(pathname, { replace: true, state: null }); }, []);
 
   const load = async () => {
     setListErr('');
@@ -88,143 +44,12 @@ export default function ManagePage() {
       setListErr('Could not load advisories. Please try again later.');
     }
   };
-
   useEffect(() => { load(); }, [isAdmin]);
-  useEffect(() => () => addedRef.current.forEach((p) => URL.revokeObjectURL(p.preview)), []); // free photo previews on leaving
-
-  // ---------- Unsaved changes ----------
-  // The form remembers what it held when it opened. It has unsaved changes when the fields or kept photos differ
-  // from that, or new photos were added. Leaving then asks first: Cancel, New advisory, Edit or View on another
-  // row, a link in the menu, or closing or reloading the tab.
-  const [start, setStart] = useState('');
-  const snapshot = (values, photos) => JSON.stringify([values, photos]);
-  const dirty = open && (added.length > 0 || snapshot(v, kept) !== start);
-  const okToLeave = () => !dirty || window.confirm(LEAVE);
-
-  useEffect(() => {
-    if (!dirty) return undefined;
-    const onUnload = (e) => { e.preventDefault(); e.returnValue = ''; }; // the browser shows its own "Leave site?"
-    // Menu and other links: asked here, before the router moves on. A plain left click only (not a new tab).
-    const onLink = (e) => {
-      const link = e.target.closest && e.target.closest('a[href]');
-      if (!link || link.target === '_blank' || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
-      if (!window.confirm(LEAVE)) { e.preventDefault(); e.stopPropagation(); }
-    };
-    window.addEventListener('beforeunload', onUnload);
-    document.addEventListener('click', onLink, true);
-    return () => { window.removeEventListener('beforeunload', onUnload); document.removeEventListener('click', onLink, true); };
-  }, [dirty]);
-
-  // ---------- Form (UC06 and editing) ----------
-  const openForm = (a) => {
-    if (!okToLeave()) return;
-    added.forEach((p) => URL.revokeObjectURL(p.preview));
-    const values = a ? formValues(a) : { ...EMPTY, starts_on: todayISO() };
-    const photos = a ? [...(a.photo_paths || [])] : [];
-    setEditing(a || null);
-    setV(values);
-    setKept(photos);
-    setStart(snapshot(values, photos));
-    setAdded([]);
-    setErrs({}); setPhotoErr(''); setFormErr(''); setOkMsg('');
-    setOpen(true);
-  };
-  // Scroll to the form and put the cursor in the title each time it opens.
-  useEffect(() => {
-    if (!open) return;
-    formRef.current.scrollIntoView({ block: 'start' });
-    document.getElementById('mt').focus({ preventScroll: true });
-  }, [open, editing]);
-
-  const closeForm = () => {
-    if (!okToLeave()) return;
-    added.forEach((p) => URL.revokeObjectURL(p.preview));
-    setAdded([]); setKept([]); setEditing(null); setOpen(false);
-  };
-
-  // Every change re-checks the fields that already show an error, so an error goes away as soon as it is fixed
-  // (changing the start date can also fix the end date). Other fields are only checked on Save or Publish.
-  const change = (next) => {
-    setV(next);
-    setErrs((old) => {
-      const now = validate(next);
-      return Object.fromEntries(Object.keys(old).filter((k) => now[k]).map((k) => [k, now[k]]));
-    });
-  };
-  const field = (k) => ({ value: v[k], onChange: (e) => change({ ...v, [k]: e.target.value }) });
-  const pinned = v.lat !== '' && v.lng !== '' ? { lat: +v.lat, lng: +v.lng } : null;
-  const setPin = (p) => setV((x) => ({ ...x, lat: p ? String(p.lat) : '', lng: p ? String(p.lng) : '' }));
-  // A place found by the map search fills in the Location box, unless staff already wrote something there.
-  const foundPlace = (name) => setV((x) => (x.location.trim() ? x : { ...x, location: name }));
-
-  const addPhotos = (e) => {
-    const problems = new Set(), next = [...added];
-    [...e.target.files].forEach((file) => {
-      if (!isPhotoOk(file)) problems.add(`${file.name} is not a JPG or PNG up to 5 MB.`);
-      else if (kept.length + next.length >= MAX_PHOTOS) problems.add(`You can add at most ${MAX_PHOTOS} photos.`);
-      else next.push({ file, preview: URL.createObjectURL(file) });
-    });
-    e.target.value = '';
-    setPhotoErr([...problems].join(' '));
-    setAdded(next);
-  };
-  const removePhoto = (list, i) => {
-    if (list === 'kept') setKept(kept.filter((_, n) => n !== i));
-    else { URL.revokeObjectURL(added[i].preview); setAdded(added.filter((_, n) => n !== i)); }
-  };
-
-  const published = !!editing && editing.state === 'Published';
-
-  const submit = async (e) => {
-    e.preventDefault();
-    // Pressing Enter uses the first submit button. Save as draft comes first so Enter never publishes by accident;
-    // when it is hidden (editing a published advisory) the advisory simply stays published.
-    const submitter = e.nativeEvent.submitter;
-    const state = submitter && submitter.value === 'Draft' && !published ? 'Draft' : 'Published';
-    const problems = validate(v);
-    setErrs(problems);
-    const bad = ['title', 'starts_on', 'ends_on', 'work_hours'].find((k) => problems[k]);
-    if (bad) { document.getElementById(bad === 'work_hours' ? hoursFieldId(v) : FIELD_ID[bad]).focus(); return; }
-    setFormErr('');
-    setSaving(submitter ? submitter.value : 'Published');
-    // Upload new photos one by one. Each uploaded photo moves to "kept", so a retry does not upload it twice.
-    const k = [...kept], waiting = [...added];
-    try {
-      while (waiting.length) {
-        k.push(await uploadAdvisoryPhoto(waiting[0].file));
-        URL.revokeObjectURL(waiting[0].preview);
-        waiting.shift();
-      }
-      const text = (s) => s.trim() || null;
-      const fields = {
-        title: v.title.trim(), category: v.category, zone_id: v.zone_id ? +v.zone_id : null,
-        location: text(v.location), starts_on: v.starts_on, ends_on: v.ends_on || null,
-        work_hours: hoursUsed(v) ? formatHours(hoursOf(v)) : text(v.work_hours),
-        severity: v.severity, status: v.status, body: v.body.trim(), detour: text(v.detour),
-        affected_businesses: text(v.affected_businesses), photo_paths: k, state,
-        // The pin is only sent when there is one, or one is being removed, so advisories without a pin still save
-        // before the database has the pin columns.
-        ...(pinned || (editing && editing.lat != null) ? { lat: pinned ? pinned.lat : null, lng: pinned ? pinned.lng : null } : {}),
-      };
-      const wasNew = !editing;
-      const saved = await saveAdvisory(editing && editing.id, fields);
-      setAdded([]); setKept([]); setEditing(null); setOpen(false);
-      setTab(saved.state);
-      await load();
-      setOkMsg(state === 'Draft' ? `Draft saved: ${saved.title}` : wasNew ? `Published: ${saved.title}` : `Saved: ${saved.title}`);
-    } catch (err) {
-      console.error(err);
-      setKept(k); setAdded(waiting);
-      setFormErr(`Could not save the advisory. ${err.message}`);
-    } finally {
-      setSaving('');
-    }
-  };
 
   // ---------- Row buttons: view, edit, publish, end (UC08) ----------
   const onAct = async (act, a) => {
-    if (act === 'view') { if (okToLeave()) navigate(`/advisories/${a.id}`); return; }
-    if (act === 'edit') { openForm(a); return; }
+    if (act === 'view') { navigate(`/advisories/${a.id}`); return; }
+    if (act === 'edit') { navigate(`/manage/${a.id}/edit`); return; }
     if (act === 'end' && !window.confirm(`End "${a.title}"?\n\nUse this when the work has finished. The advisory moves to the ended archive and shows as completed.`)) return;
     setBusyRow(a.id); setOkMsg(''); setListErr('');
     try {
@@ -242,68 +67,13 @@ export default function ManagePage() {
   const rows = all.filter((a) => a.state === tab);
   // Published advisories past their end date: the public already sees them as ended, but staff should confirm.
   const overdue = all.filter(isOverdue).length;
-  const thumbs = [
-    ...kept.map((p, i) => ({ src: photoUrl(p), list: 'kept', i })),
-    ...added.map((p, i) => ({ src: p.preview, list: 'added', i })),
-  ];
-  const err = (k, id) => errs[k] && <p className="err" id={id}>{errs[k]}</p>;
 
   return (
     <section>
-      <PageHero kicker="Staff" photo="advisory-viaduct.jpg" title="My advisories" sub="Post, edit, publish and end construction advisories.">
-        <div className="ctas" style={{ justifyContent: 'flex-start' }}><button type="button" className="btn gold" onClick={() => openForm()}>+ New advisory</button></div>
+      <PageHero kicker="Staff" photo="advisory-viaduct.jpg" title="Manage advisories" sub="Post, edit, publish and end construction advisories.">
+        <div className="ctas" style={{ justifyContent: 'flex-start' }}><Link className="btn gold" to="/manage/new">+ New advisory</Link></div>
       </PageHero>
       {isAdmin && <p className="note"><b>Admin view.</b> You see every advisory, including ones posted by other staff and sample ones with no author recorded, and you can edit or end any of them.</p>}
-
-      {open && (
-        <form className="card stack" ref={formRef} noValidate aria-labelledby="mftitle" onSubmit={submit}>
-          <h2 id="mftitle">{editing ? `Edit: ${editing.title}` : 'New advisory'}</h2>
-          <div><label htmlFor="mt">Title</label><input id="mt" className="in" maxLength={150} placeholder="e.g. Lane closure on Sample Road B" aria-describedby="mte" {...field('title')} />{err('title', 'mte')}</div>
-          <div className="fgrid">
-            <div><label htmlFor="mc">Type</label><select id="mc" className="in" {...field('category')}>{CATS.map((c) => <option key={c}>{c}</option>)}</select></div>
-            <div><label htmlFor="mz">Area</label><ZoneSelect id="mz" all="All areas" value={v.zone_id} onChange={(z) => change({ ...v, zone_id: z })} /></div>
-            <div><label htmlFor="ms1">Start date</label><input id="ms1" className="in" type="date" aria-describedby="mse" {...field('starts_on')} />{err('starts_on', 'mse')}</div>
-            <div><label htmlFor="me1">End date (optional)</label><input id="me1" className="in" type="date" aria-describedby="mde" {...field('ends_on')} />{err('ends_on', 'mde')}</div>
-            <div><label htmlFor="mv">Severity</label><select id="mv" className="in" aria-describedby="mvh" {...field('severity')}>{SEVERITY.map((s) => <option key={s}>{s}</option>)}</select><p className="mut hint" id="mvh">High shows it in the urgent banner on every page, from {URGENT_LEAD_DAYS} days before it starts.</p></div>
-            <div><label htmlFor="mst">Work status</label><select id="mst" className="in" aria-describedby="msth" {...field('status')}>
-              {/* Finished work is ended with the End button, which also marks it Completed. "Completed" only shows
-                  here for an older advisory that already has it, so its value is not lost. */}
-              {['Planned', 'Ongoing', ...(v.status === 'Completed' ? ['Completed'] : [])].map((s) => <option key={s}>{s}</option>)}
-            </select><p className="mut hint" id="msth">When the work finishes, use End on the list below.</p></div>
-          </div>
-          <WorkHoursField v={v} onChange={change} error={errs.work_hours} />
-          <fieldset className="stack plain">
-            <legend>Location</legend>
-            <div><label htmlFor="ml">Where the works are, in words</label><input id="ml" className="in" placeholder="e.g. Jalan Magazine, near Komtar" aria-describedby="mlh" {...field('location')} />
-              <p className="mut hint" id="mlh">Then pin it on the map (optional), so the public can see exactly where it is.</p></div>
-            <LocationPicker value={pinned} onChange={setPin} onFound={foundPlace} key={editing ? editing.id : 'new'} />
-          </fieldset>
-          <div><label htmlFor="mb">Details</label><textarea id="mb" className="in" rows={4} placeholder="What is happening, and what should people expect?" {...field('body')} /></div>
-          <div className="fgrid2">
-            <div><label htmlFor="md">Detour and access</label><textarea id="md" className="in" rows={3} placeholder="Detour route, pedestrian access, parking" {...field('detour')} /></div>
-            <div><label htmlFor="mbz">Affected businesses</label><textarea id="mbz" className="in" rows={3} placeholder="Shops affected and how customers reach them" {...field('affected_businesses')} /></div>
-          </div>
-          <div>
-            <label htmlFor="mp">Site photos (JPG or PNG, up to 5 MB each, at most 5)</label>
-            <div className="thumbs">
-              {thumbs.map((t, n) => (
-                <figure className="thumb" key={`${t.list}:${t.i}:${t.src}`}>
-                  <img src={t.src} alt={`Photo ${n + 1}`} />
-                  <button type="button" aria-label={`Remove photo ${n + 1}`} onClick={() => removePhoto(t.list, t.i)}>×</button>
-                </figure>
-              ))}
-            </div>
-            <input id="mp" className="in" type="file" accept="image/jpeg,image/png" multiple disabled={thumbs.length >= MAX_PHOTOS} onChange={addPhotos} />
-            {photoErr && <p className="err">{photoErr}</p>}
-          </div>
-          <div className="mactions">
-            {!published && <button className="btn s" type="submit" value="Draft" disabled={!!saving}>{saving === 'Draft' ? 'Saving…' : 'Save as draft'}</button>}
-            <button className="btn" type="submit" value="Published" disabled={!!saving}>{saving === 'Published' ? 'Saving…' : published ? 'Save changes' : 'Publish'}</button>
-            <button className="btn s" type="button" disabled={!!saving} onClick={closeForm}>Cancel</button>
-          </div>
-          {formErr && <p className="err" role="alert">{formErr}</p>}
-        </form>
-      )}
 
       <div className="tabs" role="group" aria-label="Show advisories by state">
         {STATES.map(([state, label]) => (

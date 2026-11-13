@@ -47,10 +47,10 @@ test.describe('with a pretend staff account', () => {
     await page.goto('./#/manage');
     await expect(page.locator('h1')).toHaveText('Staff sign in');
     await signIn(page);
-    await expect(page.locator('h1')).toHaveText('My advisories');
+    await expect(page.locator('h1')).toHaveText('Manage advisories');
     await expect(page).toHaveURL(/#\/manage$/);
     await page.reload();
-    await expect(page.locator('h1')).toHaveText('My advisories');
+    await expect(page.locator('h1')).toHaveText('Manage advisories');
     void errors;
   });
 
@@ -61,7 +61,7 @@ test.describe('with a pretend staff account', () => {
     await expect(page.locator('h1')).toHaveText('Operational dashboard');
     if (isPhone(page)) await page.getByRole('button', { name: 'Menu' }).click();
     const nav = page.getByRole('navigation', { name: 'Main' });
-    await expect(nav.getByRole('link', { name: 'My advisories' })).toBeVisible();
+    await expect(nav.getByRole('link', { name: 'Manage advisories' })).toBeVisible();
     await expect(nav.getByRole('link', { name: 'Admin' })).toBeVisible();
     void errors;
   });

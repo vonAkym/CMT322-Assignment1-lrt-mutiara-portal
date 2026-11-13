@@ -6,7 +6,7 @@ import { useStaff } from './staff.jsx';
 import Logo from './Logo.jsx';
 
 const MENU = [['/advisories', 'Advisories'], ['/schedule', 'Schedule'], ['/map', 'Map'], ['/report', 'Report'], ['/track', 'Feedback']];
-const STAFF_MENU = [['/manage', 'My advisories'], ['/admin', 'Admin']];
+const STAFF_MENU = [['/manage', 'Manage advisories'], ['/admin', 'Admin']];
 
 const Brand = () => <Link className="brand" to="/" aria-label="MutiaraInfo, home"><Logo /></Link>;
 
