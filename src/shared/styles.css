@@ -362,7 +362,8 @@ textarea.in { resize: vertical; }
 .tabs button span { margin-left: 4px; padding: 1px 8px; border-radius: 99px; background: var(--plbg); font-size: 12px; }
 .tabs button[aria-pressed="true"] { background: var(--pri); border-color: var(--pri); color: var(--on); }
 .tabs button[aria-pressed="true"] span { background: rgba(255, 255, 255, .25); color: inherit; }
-#mok, #merr { margin: 0 0 12px; }
+/* The saved or error message above the Manage advisories table: the same gap as the notes above it. */
+#mok, #merr { margin: 0 0 16px; }
 .acts { white-space: nowrap; text-align: right; }
 /* Row buttons: side by side on wide screens, stacked on narrow ones, always 8px apart. */
 .acts-in { display: flex; justify-content: flex-end; gap: 8px; }
