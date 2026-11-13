@@ -1,6 +1,6 @@
 // Staff page from Module 1: My advisories (UC06 to UC08). The Module 4 ticket pages are in admin-tickets.test.jsx.
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import { Link } from 'react-router';
 import { advisory, renderPage } from './helpers/render.jsx';
 
@@ -8,7 +8,9 @@ vi.mock('../../src/shared/supabase.js', async (orig) => {
   const { SAMPLE_ZONES } = await import('./helpers/render.jsx');
   return { ...(await orig()), listZones: async () => SAMPLE_ZONES };
 });
-vi.mock('../../src/modules/admin/api.js', () => ({ myProfile: vi.fn(async () => ({ role: 'admin' })) }));
+// Who is signed in (normally from Danial's StaffProvider). Tests change the role through `signedIn`.
+const signedIn = vi.hoisted(() => ({ user: { id: 'u1' }, profile: { role: 'construction' } }));
+vi.mock('../../src/shared/staff.jsx', () => ({ useStaff: () => signedIn }));
 vi.mock('../../src/modules/advisories/api.js', async (orig) => ({
   ...(await orig()),
   listMyAdvisories: vi.fn(async () => []), saveAdvisory: vi.fn(), publishAdvisory: vi.fn(), endAdvisory: vi.fn(),
@@ -17,7 +19,7 @@ vi.mock('../../src/modules/advisories/api.js', async (orig) => ({
 const api = await import('../../src/modules/advisories/api.js');
 const { default: ManagePage } = await import('../../src/modules/advisories/ManagePage.jsx');
 
-beforeEach(() => { vi.clearAllMocks(); api.listMyAdvisories.mockResolvedValue([]); });
+beforeEach(() => { vi.clearAllMocks(); api.listMyAdvisories.mockResolvedValue([]); signedIn.profile = { role: 'construction' }; });
 
 describe('My advisories: the advisory form', () => {
   const openForm = async (user) => {
@@ -80,6 +82,48 @@ describe('My advisories: the advisory form', () => {
     expect(screen.getByRole('button', { name: 'Edit: Current works' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'View: Current works' })).toBeInTheDocument();
     expect(screen.getAllByText(/Overdue works/).length).toBeGreaterThan(0);
+  });
+});
+
+describe('My advisories: who sees what (fix/access-advisories)', () => {
+  const rows = [
+    advisory({ id: 1, title: 'Mine', created_by: 'u1', posted_by: 'Asyraf' }),
+    advisory({ id: 2, title: 'Colleague', created_by: 'u2', posted_by: 'Aina' }),
+    advisory({ id: 3, title: 'Sample', created_by: null, posted_by: null }),
+  ];
+
+  it('other staff get only their own advisories, without a Posted by column', async () => {
+    api.listMyAdvisories.mockResolvedValue([rows[0]]);
+    renderPage(<ManagePage />, { path: '/manage' });
+    expect(await screen.findByRole('button', { name: 'Edit: Mine' })).toBeInTheDocument();
+    expect(api.listMyAdvisories).toHaveBeenCalledWith({ all: false });
+    expect(screen.queryByRole('columnheader', { name: 'Posted by' })).not.toBeInTheDocument();
+    expect(screen.queryByText(/Admin view/)).not.toBeInTheDocument();
+  });
+
+  it('admins get every advisory, with who posted each, and can edit and end them all', async () => {
+    signedIn.profile = { role: 'admin' };
+    api.listMyAdvisories.mockResolvedValue(rows);
+    renderPage(<ManagePage />, { path: '/manage' });
+    expect(await screen.findByRole('button', { name: 'End: Sample' })).toBeInTheDocument();
+    expect(api.listMyAdvisories).toHaveBeenCalledWith({ all: true });
+    expect(screen.getByRole('columnheader', { name: 'Posted by' })).toBeInTheDocument();
+    expect(screen.getByRole('cell', { name: 'You' })).toBeInTheDocument();
+    expect(screen.getByRole('cell', { name: 'Aina' })).toBeInTheDocument();
+    expect(screen.getByRole('cell', { name: 'Not recorded' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Edit: Colleague' })).toBeInTheDocument();
+    expect(screen.getByText(/Admin view/)).toBeInTheDocument();
+  });
+
+  it('puts each admin cell under its own heading', async () => {
+    signedIn.profile = { role: 'admin' };
+    api.listMyAdvisories.mockResolvedValue([rows[0]]);
+    renderPage(<ManagePage />, { path: '/manage' });
+    await screen.findByRole('button', { name: 'Edit: Mine' });
+    const heads = screen.getAllByRole('columnheader').map((h) => h.textContent);
+    const cells = within(screen.getAllByRole('row')[1]).getAllByRole('cell').map((c) => c.textContent);
+    expect(cells[heads.indexOf('Posted by')]).toBe('You');
+    expect(cells[heads.indexOf('Dates')]).not.toBe('You');
   });
 });
 

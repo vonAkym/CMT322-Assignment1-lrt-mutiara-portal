@@ -181,4 +181,19 @@ describe('staff saves (UC06 to UC08)', () => {
     expect(fake.calls).toContainEqual(['eq', 'created_by', 'u1']);
     fake.user = null;
   });
+  it('without a signed-in user, staff get nothing (and the database is not asked)', async () => {
+    expect(await api.listMyAdvisories()).toEqual([]);
+    expect(fake.calls).toEqual([]);
+  });
+  it('admins get every advisory, each with who posted it (fix/access-advisories)', async () => {
+    fake.user = { id: 'u1' };
+    // The fake answers every query with these rows, so they stand for both the advisories and the profiles.
+    fake.result = { data: [{ id: 'u2', full_name: 'Aina', created_by: 'u2' }, { id: 7, created_by: null }], error: null };
+    const list = await api.listMyAdvisories({ all: true });
+    expect(fake.calls).not.toContainEqual(['eq', 'created_by', 'u1']);
+    expect(fake.calls).toContainEqual(['from', 'profiles']);
+    expect(fake.calls).toContainEqual(['in', 'id', ['u2']]);
+    expect(list.map((a) => a.posted_by)).toEqual(['Aina', null]);
+    fake.user = null;
+  });
 });
