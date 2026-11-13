@@ -59,7 +59,7 @@ export default function TrackPage() {
                 <div className={`step${k <= i ? ' d' : ''}`} key={s}><i /><span style={k === i ? { fontWeight: 600 } : undefined}>{s}</span></div>
               ))}
             </div>
-            {t.escalated && <p className="note">This concern has been passed to the government officers.</p>}
+            {t.escalated && <p className="note">This complaint has been passed to the government officers.</p>}
             <h3>History</h3>
             <ol className="thist">
               {t.history.map((h, k) => (

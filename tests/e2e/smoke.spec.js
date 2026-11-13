@@ -6,7 +6,7 @@ const PAGES = [
   ['/advisories', 'Every works notice on the line'],
   ['/schedule', 'What runs when, area by area'],
   ['/map', 'Construction and disruption map'],
-  ['/report', 'Report a concern'],
+  ['/report', 'Report a complaint'],
   ['/track', 'Feedback and ticket tracking'],
   ['/login', 'Staff sign in'],
   ['/landing', 'Landing page alternatives'],

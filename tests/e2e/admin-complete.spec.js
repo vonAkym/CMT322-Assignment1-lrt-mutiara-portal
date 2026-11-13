@@ -85,7 +85,7 @@ test('Manage staff roles is refused for other staff', async ({ page }) => {
   await expect(page.getByRole('alert')).toHaveText('Only admins can manage staff roles.');
 });
 
-test('the Report form sends the chosen area with the concern', async ({ page, errors }) => {
+test('the Report form sends the chosen area with the complaint', async ({ page, errors }) => {
   await fakeWrites(page);
   let sent;
   await page.route('**/rest/v1/rpc/submit_ticket', async (r) => { sent = r.request().postDataJSON(); await r.fulfill({ json: 'LRT-2099-0003' }); });
@@ -94,7 +94,7 @@ test('the Report form sends the chosen area with the concern', async ({ page, er
   const area = page.getByLabel('Area (optional)');
   await expect(area.locator('option')).not.toHaveCount(1); // the areas have loaded
   await area.selectOption({ index: 1 });
-  await page.getByRole('button', { name: 'Submit concern' }).click();
+  await page.getByRole('button', { name: 'Submit complaint' }).click();
   await expect(page.getByText('LRT-2099-0003')).toBeVisible();
   expect(sent.p_zone_id).toBeGreaterThan(0);
   void errors;

@@ -1,4 +1,4 @@
-// Report page: sends a concern to the database and shows the ticket number.
+// Report page: sends a complaint to the database and shows the ticket number.
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { isPhotoOk } from '../../shared/supabase.js';
@@ -44,7 +44,7 @@ export default function ReportPage() {
       fileRef.current.value = '';
     } catch (err) {
       console.error(err);
-      setPhotoErr(`Could not send your concern: ${err.message}`);
+      setPhotoErr(`Could not send your complaint: ${err.message}`);
     } finally {
       setSending(false);
     }
@@ -52,7 +52,7 @@ export default function ReportPage() {
 
   return (
     <section>
-      <PageHero kicker="Report" photo="advisory-footpath.jpg" title="Report a concern"
+      <PageHero kicker="Report" photo="advisory-footpath.jpg" title="Report a complaint"
         sub="Noise, dust, damage or blocked access near the works? Tell the team and get a ticket number straight away." />
       <div className="row r3">
         <form className="card stack" noValidate onSubmit={submit}>
@@ -65,15 +65,15 @@ export default function ReportPage() {
             {photoErr && <p className="err">{photoErr}</p>}</div>
           <div><label htmlFor="rn">Your name (optional)</label><input id="rn" className="in" {...field('name')} /></div>
           <label style={{ fontWeight: 400 }}><input type="checkbox" checked={v.anonymous} onChange={(e) => setV({ ...v, anonymous: e.target.checked })} /> Submit without my name</label>
-          <button className="btn" type="submit" style={{ alignSelf: 'flex-start' }} disabled={sending}>{sending ? 'Sending…' : 'Submit concern'}</button>
+          <button className="btn" type="submit" style={{ alignSelf: 'flex-start' }} disabled={sending}>{sending ? 'Sending…' : 'Submit complaint'}</button>
         </form>
         <div className="stack">
-          <div className="card"><h2>What happens next</h2><p>1. You submit the concern.<br />2. You receive a ticket number.<br />3. The team reviews and replies.<br />4. You track progress with your ticket number.</p></div>
+          <div className="card"><h2>What happens next</h2><p>1. You submit the complaint.<br />2. You receive a ticket number.<br />3. The team reviews and replies.<br />4. You track progress with your ticket number.</p></div>
           {ticket && (
             <div className="ok" role="status">
               <b>Your ticket number</b>
               <div style={{ fontSize: 24, fontWeight: 600 }}>{ticket}</div>
-              <p>Keep it to track your concern.</p>
+              <p>Keep it to track your complaint.</p>
               <button className="btn s" type="button" style={{ marginTop: 10 }} onClick={() => navigate(trackUrl(ticket))}>Track this ticket</button>
             </div>
           )}

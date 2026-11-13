@@ -88,7 +88,7 @@ export default function LoginPage() {
           <h2>Who can sign in</h2>
           <p>Staff accounts are created by an admin and have one of these roles:</p>
           <ul className="roles">{Object.values(ROLE_NAMES).map((r) => <li key={r}>{r}</li>)}</ul>
-          <p className="mut">Want to follow a concern you reported? You don&apos;t need to sign in: use your ticket number on the Feedback page.</p>
+          <p className="mut">Want to follow a complaint you reported? You don&apos;t need to sign in: use your ticket number on the Feedback page.</p>
         </div>
       </div>
     </section>

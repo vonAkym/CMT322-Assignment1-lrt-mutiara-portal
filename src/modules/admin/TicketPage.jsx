@@ -156,7 +156,7 @@ export default function TicketPage() {
       </div>
       <div className="adv">
         <div className="stack">
-          <div className="card"><h2>The concern</h2><p><Para text={t.description} /></p></div>
+          <div className="card"><h2>The complaint</h2><p><Para text={t.description} /></p></div>
           <div className="card"><h2>Photo</h2>
             {t.photo_path ? <Photo path={t.photo_path} alt={`Photo sent with ${t.ticket_no}`} /> : <p className="mut">No photo was sent.</p>}
           </div>
