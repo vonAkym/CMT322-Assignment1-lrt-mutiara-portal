@@ -70,15 +70,10 @@ test.describe('Module 1: advisories', () => {
     void errors;
   });
 
-  test('zone alerts check the form, then confirm (saving is faked)', async ({ page, errors }) => {
-    await fakeWrites(page);
+  test('the zone alert sign-up is hidden until alert emails can be sent', async ({ page, errors }) => {
     await open(page, '/advisories');
-    await page.getByRole('button', { name: 'Subscribe' }).click();
-    await expect(page.getByText('Choose an area.')).toBeVisible();
-    await page.locator('#sz').selectOption({ index: 1 });
-    await page.locator('#se').fill('test@example.com');
-    await page.getByRole('button', { name: 'Subscribe' }).click();
-    await expect(page.getByText(/^Subscribed\. Alerts for .+ will go to test@example\.com\.$/)).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Filter advisories' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Subscribe' })).toHaveCount(0);
     void errors;
   });
 

@@ -58,6 +58,13 @@ describe('Home page (UC01)', () => {
 });
 
 describe('Advisories page (UC03)', () => {
+  it('does not show the zone alert sign-up (hidden until alert emails can be sent)', async () => {
+    renderPage(<AdvisoriesPage />, { path: '/advisories' });
+    await waitFor(() => expect(api.listAdvisories).toHaveBeenCalled());
+    expect(screen.queryByRole('button', { name: 'Subscribe' })).not.toBeInTheDocument();
+    expect(screen.queryByText(/Alert me/)).not.toBeInTheDocument();
+  });
+
   it('reads the filters from the address and asks the database for them', async () => {
     renderPage(<AdvisoriesPage />, { path: '/advisories', at: '/advisories?q=pile&zone=1&category=Road+closure&status=Ongoing&date=2026-11-20&urgent=1' });
     await waitFor(() => expect(api.listAdvisories).toHaveBeenCalledWith({
