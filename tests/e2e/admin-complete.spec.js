@@ -21,18 +21,21 @@ async function signInAs(page, role, name) {
   return saved;
 }
 
-test('the Construction Team can only work on its own tickets', async ({ page, errors }) => {
+test('the Construction Team sees and works on only its own tickets', async ({ page, errors }) => {
   const saved = await signInAs(page, 'construction', 'Ravi');
-  await expect(page.getByText(/As Construction Team you can change the status/)).toBeVisible();
-  await expect(page.getByLabel('Status for LRT-2026-0001')).toBeDisabled();
+  await expect(page.getByText(/As Construction Team you see, and can change the status/)).toBeVisible();
+  await expect(page.getByRole('link', { name: 'LRT-2026-0002' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'LRT-2026-0001' })).toHaveCount(0); // unassigned: not shown
   await expect(page.getByLabel('Priority for LRT-2026-0002')).toBeDisabled();
   await page.getByLabel('Status for LRT-2026-0002').selectOption('In progress');
   await expect(page.getByText('Saved LRT-2026-0002.')).toBeVisible();
   expect(saved[1].status).toBe('In progress');
 
-  await page.getByRole('link', { name: 'LRT-2026-0001' }).click();
-  await expect(page.getByText(/read-only for you/)).toBeVisible();
+  await page.getByRole('link', { name: 'LRT-2026-0002' }).click();
   await expect(page.getByText('Only an admin can escalate a ticket.')).toBeVisible();
+  // Typing the address of a ticket that is not theirs does not open it.
+  await page.goto('./#/admin/tickets/LRT-2026-0001');
+  await expect(page.getByRole('heading', { name: 'This ticket is not given to you' })).toBeVisible();
   void errors;
 });
 

@@ -35,19 +35,21 @@ Free projects pause after about 7 days with no activity. Open the project or the
 4. New query again. Paste `supabase/migrations/20261110000000_ticket_replies.sql` (Module 4 replies and escalation) and click **Run**.
 5. New query again. Paste `supabase/migrations/20261113000000_admin_complete.sql` (Module 4 roles, ticket areas, staff accounts) and click **Run**.
 6. New query again. Paste `supabase/migrations/20261113010000_advisory_location.sql` (Module 1 map pin for each advisory) and click **Run**.
-7. New query again. Paste `supabase/seed.sql` and click **Run**.
-8. New query again. Paste `supabase/seed_advisories.sql` and click **Run**. You can run this one again any time to reset the sample advisories.
-9. New query again. Paste `supabase/seed_map.sql` (Module 2 map features) and click **Run**. Run it again whenever you re-run `seed_advisories.sql`.
-10. Open **Table Editor**. You should see zones, updates, map_features, tickets and the others.
+7. New query again. Paste `supabase/migrations/20261114000000_staff_own_tickets.sql` (Module 4: staff see only the tickets given to them) and click **Run**.
+8. New query again. Paste `supabase/seed.sql` and click **Run**.
+9. New query again. Paste `supabase/seed_advisories.sql` and click **Run**. You can run this one again any time to reset the sample advisories.
+10. New query again. Paste `supabase/seed_map.sql` (Module 2 map features) and click **Run**. Run it again whenever you re-run `seed_advisories.sql`.
+11. Open **Table Editor**. You should see zones, updates, map_features, tickets and the others.
 
-**Already set up before the advisories migration?** Run only steps 3, 4, 5, 6 and 8.
-**Already set up before the replies migration?** Run only steps 4, 5 and 6.
-**Already set up before the roles migration?** Run only steps 5 and 6. Until step 5 runs, Manage staff roles says the database needs the latest update, and choosing an area on the Report form fails.
-**Already set up before the advisory location migration?** Run only step 6. Until it runs, the site still works without map pins
+**Already set up before the advisories migration?** Run only steps 3, 4, 5, 6, 7 and 9.
+**Already set up before the replies migration?** Run only steps 4, 5, 6 and 7.
+**Already set up before the roles migration?** Run only steps 5, 6 and 7. Until step 5 runs, Manage staff roles says the database needs the latest update, and choosing an area on the Report form fails.
+**Already set up before the advisory location migration?** Run only steps 6 and 7. Until it runs, the site still works without map pins
 (saving a pin says the database needs the update), but each page logs one refused request in the browser console,
 so `npm run test:e2e` fails until it has been run.
+**Already set up before the staff tickets migration?** Run only step 7. Until it runs, the website already shows staff only their tickets, but the database still lets any staff member read every ticket.
 
-After step 5, each staff role can do only its own part with tickets: **Admin** everything (priority, assignment, escalation, staff roles); **Construction Team** the status of, and replies to, tickets given to the Construction Team or to them by name; **Government Officer** the same for escalated tickets and tickets given to the Government Officers or to them by name. Every staff role can see every ticket and the dashboard.
+After step 5, each staff role can do only its own part with tickets: **Admin** everything (priority, assignment, escalation, staff roles); **Construction Team** the status of, and replies to, tickets given to the Construction Team or to them by name; **Government Officer** the same for escalated tickets and tickets given to the Government Officers or to them by name. Admins see every ticket; the Construction Team and Government Officers only see the tickets given to them (step 7), and the dashboard figures count only those.
 
 ### Staff features without signing in (no longer needed)
 

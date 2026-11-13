@@ -35,6 +35,12 @@ export function ticketRights(profile, t) {
   return { manage: role === 'admin', handle };
 }
 
+// Which tickets a staff member sees at all: admins every ticket; the Construction Team and Government Officers only
+// the tickets they may work on (handle above). The database applies the same rule
+// (supabase/migrations/20261114000000_staff_own_tickets.sql).
+export const visibleTickets = (list, profile) =>
+  (profile?.role === 'admin' ? list : list.filter((t) => ticketRights(profile, t).handle));
+
 // UC03: the filters, read from the page address (e.g. #/admin?status=Submitted&zone=2).
 export const FILTER_KEYS = ['q', 'category', 'zone', 'status', 'priority', 'assigned', 'escalated'];
 export const readFilters = (params) => Object.fromEntries(FILTER_KEYS.map((k) => [k, params.get(k) || '']));

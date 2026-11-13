@@ -14,7 +14,7 @@ import { todayISO } from '../../shared/util.js';
 import { listStaff, listTicketEvents, listTickets, updateTicket } from './api.js';
 import {
   CATEGORIES, PRIORITIES, STATUSES, FILTER_KEYS, actionError, assigneeOptions, countBy, duration, filterTickets,
-  readFilters, responseStats, submittedAt, summaryReport, ticketRights,
+  readFilters, responseStats, submittedAt, summaryReport, ticketRights, visibleTickets,
 } from './tickets.js';
 
 const Select = ({ label, value, onChange, disabled, title, children }) => (
@@ -35,8 +35,8 @@ const Bars = ({ title, counts }) => {
 
 // What a staff member who is not an admin may do, in one sentence.
 const ROLE_HELP = {
-  construction: 'As Construction Team you can change the status of, and reply to, tickets given to the Construction Team or to you by name.',
-  government: 'As a Government Officer you can change the status of, and reply to, escalated tickets and tickets given to the Government Officers or to you by name.',
+  construction: 'As Construction Team you see, and can change the status of and reply to, the tickets given to the Construction Team or to you by name.',
+  government: 'As a Government Officer you see, and can change the status of and reply to, escalated tickets and the tickets given to the Government Officers or to you by name.',
 };
 
 // Saves text as a file in the visitor's Downloads folder.
@@ -105,7 +105,8 @@ export default function AdminPage() {
   };
 
   const zoneName = (id) => (id == null ? 'No area given' : (zones.find((z) => z.id === id) || {}).name || `Area ${id}`);
-  const all = tickets || [];
+  // The Construction Team and Government Officers only see the tickets given to them; every figure counts those.
+  const all = visibleTickets(tickets || [], profile);
   const shown = filterTickets(all, f, profile);
   const byStatus = countBy(all, 'status', STATUSES);
   const byZone = {};
@@ -124,7 +125,9 @@ export default function AdminPage() {
 
   return (
     <section className="dash">
-      <PageHero kicker="Staff" title="Operational dashboard" sub="Every complaint from residents and businesses, with its priority, owner and progress." />
+      <PageHero kicker="Staff" title="Operational dashboard" sub={profile?.role === 'admin'
+        ? 'Every complaint from residents and businesses, with its priority, owner and progress.'
+        : 'The complaints given to you, with their priority and progress.'} />
       <div className="stack" style={{ paddingBottom: 28 }}>
         {profile && (
           <p className="mut signed">Signed in as <b>{profile.full_name || 'staff member'}</b> ({ROLE_NAMES[profile.role] || profile.role}).
@@ -196,7 +199,6 @@ export default function AdminPage() {
             <div><label htmlFor="ta">Assigned to</label>
               <select id="ta" className="in" value={f.assigned} onChange={(e) => setFilter('assigned', e.target.value)}>
                 <option value="">Anyone</option>
-                {!admin && <option value="mine">Tickets I can work on</option>}
                 <option value="none">Unassigned</option>
                 {people.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
               </select></div>
@@ -210,7 +212,7 @@ export default function AdminPage() {
           {msg && <p className={msg.ok ? 'ok' : 'err'} role={msg.ok ? 'status' : 'alert'}>{msg.text}</p>}
           {!tickets && <p className="mut">Loading tickets…</p>}
           {loadErr && <p className="err" role="alert">Could not load the tickets. Please try again later.</p>}
-          {tickets && !loadErr && !all.length && <p className="mut">No tickets yet. Complaints sent from the Report page appear here.</p>}
+          {tickets && !loadErr && !all.length && <p className="mut">{admin ? 'No tickets yet. Complaints sent from the Report page appear here.' : 'No complaints are given to you yet. An admin assigns them.'}</p>}
           {tickets && !!all.length && !shown.length && <p className="mut">No tickets match these filters.</p>}
           {!!shown.length && (
             <div className="card" style={{ padding: 0, overflowX: 'auto' }}>
