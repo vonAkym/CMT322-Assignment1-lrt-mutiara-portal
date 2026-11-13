@@ -7,6 +7,7 @@ import { reportUrl } from '../complaints/ReportPage.jsx';
 import { getAdvisory, photoUrl, isOver, isUrgent } from './api.js';
 import usePageTitle from '../../shared/usePageTitle.js';
 import { where } from './AdvisoryCard.jsx';
+import { PlaceMap, mapUrl } from './AdvisoryMap.jsx';
 
 // Plain text from the database, with its line breaks kept.
 const Para = ({ text }) => text.split('\n').map((line, i) => <span key={i}>{i > 0 && <br />}{line}</span>);
@@ -51,6 +52,13 @@ function Advisory({ a }) {
         <div className="stack">
           <Gallery a={a} key={a.id} />
           <div className="card"><h2>About these works</h2><p>{a.body ? <Para text={a.body} /> : <span className="mut">No further details yet.</span>}</p></div>
+          {a.lat != null && a.lng != null && (
+            <div className="card stack">
+              <h2>Where the works are</h2>
+              <PlaceMap lat={a.lat} lng={a.lng} name={a.location || a.title} />
+              <Link className="back" to={mapUrl(a)} style={{ margin: 0 }}>View on the full disruption map</Link>
+            </div>
+          )}
           {a.detour && <div className="card"><h2>Detour and access</h2><p><Para text={a.detour} /></p></div>}
           {a.affected_businesses && <div className="card"><h2>Affected businesses</h2><p><Para text={a.affected_businesses} /></p></div>}
         </div>
@@ -67,7 +75,7 @@ function Advisory({ a }) {
             <h2>Something wrong near these works?</h2>
             <p className="mut">Tell the team about noise, dust, damage or blocked access and get a ticket number.</p>
             <button type="button" className="btn" onClick={() => navigate(reportUrl(a.location || a.title))}>Report an issue here</button>
-            <button type="button" className="btn s" onClick={() => navigate('/map')}>Open the disruption map</button>
+            <button type="button" className="btn s" onClick={() => navigate(a.lat != null && a.lng != null ? mapUrl(a) : '/map')}>Open the disruption map</button>
           </div>
         </aside>
       </div>
