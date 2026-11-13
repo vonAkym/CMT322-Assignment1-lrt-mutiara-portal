@@ -372,12 +372,24 @@ textarea.in { resize: vertical; }
 
 /* Advisory location on the map: the pin picker in the staff form and the small map on the advisory page.
    The map itself is styled by the Module 2 map styles (.lmap); these only make it smaller and framed. */
-fieldset.plain { border: 0; padding: 0; margin: 0; min-width: 0; }
+/* No border, but keeps the form's gap above it (.stack). */
+fieldset.plain { border: 0; padding: 0; margin-inline: 0; margin-bottom: 0; min-width: 0; }
+.stack > fieldset.plain + fieldset.plain, .stack > * + fieldset.plain { margin-top: 24px; }
 fieldset.plain > legend { padding: 0; margin-bottom: 8px; font-size: 16px; font-weight: 700; }
 .amap-wrap { border: 1px solid var(--ln); border-radius: 16px; }
 .lmap.amap { height: 300px; min-height: 0; }
 .pick-find { display: flex; gap: 8px; }
 .pick-find .in { flex: 1; min-width: 0; }
+
+/* Work hours in the advisory form: two time pickers and a 24 hours box, then a box for each day. */
+.whrow { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; gap: 14px; align-items: end; }
+.whcheck, .whday { display: flex; align-items: center; gap: 8px; font-weight: 400; margin: 0; min-height: 48px; }
+.whlabel { font-size: 14px; font-weight: 600; margin: 0 0 6px; }
+.whdays { display: flex; flex-wrap: wrap; gap: 8px; }
+.whday { min-height: 44px; padding: 0 14px; border: 1px solid var(--inb); border-radius: 999px; cursor: pointer; }
+.whday:has(input:checked) { background: var(--pri); border-color: var(--pri); color: var(--on); }
+.whquick { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+@media (max-width: 860px) { .whrow { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .whcheck { grid-column: 1 / -1; min-height: 0; } }
 
 /* ===== Module 4: ticket table on the admin dashboard ===== */
 /* Each dropdown is as wide as its longest choice, so the whole word always shows. On narrow screens
