@@ -18,7 +18,7 @@ const TILES = [
 
 const CARDS = [
   { to: '/map', icon: 'map', c: 'c2', title: 'Disruption map', text: 'Closed roads, pedestrian routes and shop access shown by location and date.', go: 'Open the map →' },
-  { to: '/report', icon: 'report', c: 'c3', title: 'Report a concern', text: 'Tell the team about noise, dust, damage or blocked access and get a ticket number.', go: 'Report a concern →' },
+  { to: '/report', icon: 'report', c: 'c3', title: 'Report a complaint', text: 'Tell the team about noise, dust, damage or blocked access and get a ticket number.', go: 'Report a complaint →' },
   { to: '/track', icon: 'Progress', c: 'c1', title: 'Track your ticket', text: 'Enter your ticket number to see its status and history.', go: 'Check a ticket →' },
 ];
 
@@ -52,10 +52,10 @@ export default function HomePage() {
       <div className="hero"><div className="hero-in">
         <p className="kick">LRT Mutiara Line · Penang</p>
         <h1>Know the works before you go</h1>
-        <p className="lead">Road closures, pedestrian routes, business access and construction schedules in one place, with a clear way to raise your concerns.</p>
+        <p className="lead">Road closures, pedestrian routes, business access and construction schedules in one place, with a clear way to raise your complaints.</p>
         <div className="ctas">
           <Link className="btn gold" to="/advisories">View advisories</Link>
-          <Link className="btn gh" to="/report">Report a concern</Link>
+          <Link className="btn gh" to="/report">Report a complaint</Link>
         </div>
         <form className="sf" role="search" onSubmit={search}>
           <span className="sw">
@@ -101,7 +101,7 @@ export default function HomePage() {
         <h2>Noise, dust or a blocked entrance?</h2>
         <p>Tell us what is wrong and where. You get a ticket number straight away, and you can check its progress at any time.</p>
         <div className="ctas">
-          <Link className="btn gold" to="/report">Report a concern</Link>
+          <Link className="btn gold" to="/report">Report a complaint</Link>
           <Link className="btn gh" to="/track">Track a ticket</Link>
         </div>
       </div></div></div>

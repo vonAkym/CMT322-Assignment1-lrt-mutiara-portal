@@ -54,7 +54,7 @@ test.describe('Module 1: advisories', () => {
     await expect(page.getByLabel('Status')).toHaveValue('Ongoing');
   });
 
-  test('an advisory card opens its details, with a link to report a concern there', async ({ page, errors }) => {
+  test('an advisory card opens its details, with a link to report a complaint there', async ({ page, errors }) => {
     await open(page, '/advisories');
     const card = page.locator('.acard-link').first();
     const title = await card.textContent();
@@ -124,11 +124,11 @@ test.describe('Module 3: report and track', () => {
   test('the report form checks the description first', async ({ page }) => {
     await fakeWrites(page);
     await open(page, '/report');
-    await page.getByRole('button', { name: 'Submit concern' }).click();
+    await page.getByRole('button', { name: 'Submit complaint' }).click();
     await expect(page.getByText('Please describe the issue (at least 5 characters).')).toBeVisible();
   });
 
-  test('a concern gets a ticket number, which opens tracking (saving is faked)', async ({ page, errors }) => {
+  test('a complaint gets a ticket number, which opens tracking (saving is faked)', async ({ page, errors }) => {
     await fakeWrites(page, {
       ticketNo: 'LRT-2099-0001',
       track: { ticket_no: 'LRT-2099-0001', category: 'Noise', location: 'Komtar', status: 'Submitted', assigned_to: null, history: [{ status: 'Submitted', at: new Date().toISOString() }] },
@@ -137,7 +137,7 @@ test.describe('Module 3: report and track', () => {
     await page.getByLabel('Category').selectOption('Noise');
     await page.getByLabel('Describe the issue').fill('Piling after 10 pm every night');
     await page.getByLabel('Location').fill('Komtar');
-    await page.getByRole('button', { name: 'Submit concern' }).click();
+    await page.getByRole('button', { name: 'Submit complaint' }).click();
     await expect(page.getByText('LRT-2099-0001')).toBeVisible();
     await page.getByRole('button', { name: 'Track this ticket' }).click();
     await expect(page).toHaveURL(/#\/track\?ticket=LRT-2099-0001/);
@@ -146,7 +146,7 @@ test.describe('Module 3: report and track', () => {
     void errors;
   });
 
-  test('tracking shows the team’s reply and that the concern went to the government (faked answer)', async ({ page, errors }) => {
+  test('tracking shows the team’s reply and that the complaint went to the government (faked answer)', async ({ page, errors }) => {
     await fakeWrites(page, {
       track: {
         ticket_no: 'LRT-2099-0002', category: 'Road damage', location: 'Jalan A', status: 'Under review', assigned_to: 'Government Officers', escalated: true,
@@ -161,7 +161,7 @@ test.describe('Module 3: report and track', () => {
     await open(page, '/track?ticket=LRT-2099-0002');
     await expect(page.getByText('Reply from the team')).toBeVisible();
     await expect(page.getByText('Thanks. The drain is the council’s, so we have passed this on.')).toBeVisible();
-    await expect(page.getByText('This concern has been passed to the government officers.')).toBeVisible();
+    await expect(page.getByText('This complaint has been passed to the government officers.')).toBeVisible();
     void errors;
   });
 
@@ -177,7 +177,7 @@ test.describe('Module 3: report and track', () => {
 test.describe('navigation', () => {
   test('the main menu reaches every public page', async ({ page, errors }) => {
     await open(page, '/');
-    for (const [name, h1] of [['Advisories', 'Every works notice on the line'], ['Schedule', 'What runs when, area by area'], ['Map', 'Construction and disruption map'], ['Report', 'Report a concern'], ['Feedback', 'Feedback and ticket tracking']]) {
+    for (const [name, h1] of [['Advisories', 'Every works notice on the line'], ['Schedule', 'What runs when, area by area'], ['Map', 'Construction and disruption map'], ['Report', 'Report a complaint'], ['Feedback', 'Feedback and ticket tracking']]) {
       await (await menuLink(page, name)).click();
       await expect(page.locator('h1').first()).toHaveText(h1);
       if (isPhone(page)) await expect(page.getByRole('button', { name: 'Menu' })).toHaveAttribute('aria-expanded', 'false');

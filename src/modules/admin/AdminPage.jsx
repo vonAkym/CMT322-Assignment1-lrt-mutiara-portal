@@ -124,7 +124,7 @@ export default function AdminPage() {
 
   return (
     <section className="dash">
-      <PageHero kicker="Staff" title="Operational dashboard" sub="Every concern from residents and businesses, with its priority, owner and progress." />
+      <PageHero kicker="Staff" title="Operational dashboard" sub="Every complaint from residents and businesses, with its priority, owner and progress." />
       <div className="stack" style={{ paddingBottom: 28 }}>
         {profile && (
           <p className="mut signed">Signed in as <b>{profile.full_name || 'staff member'}</b> ({ROLE_NAMES[profile.role] || profile.role}).
@@ -210,7 +210,7 @@ export default function AdminPage() {
           {msg && <p className={msg.ok ? 'ok' : 'err'} role={msg.ok ? 'status' : 'alert'}>{msg.text}</p>}
           {!tickets && <p className="mut">Loading tickets…</p>}
           {loadErr && <p className="err" role="alert">Could not load the tickets. Please try again later.</p>}
-          {tickets && !loadErr && !all.length && <p className="mut">No tickets yet. Concerns sent from the Report page appear here.</p>}
+          {tickets && !loadErr && !all.length && <p className="mut">No tickets yet. Complaints sent from the Report page appear here.</p>}
           {tickets && !!all.length && !shown.length && <p className="mut">No tickets match these filters.</p>}
           {!!shown.length && (
             <div className="card" style={{ padding: 0, overflowX: 'auto' }}>

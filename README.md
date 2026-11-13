@@ -14,7 +14,7 @@
 
 Building a railway through a living city asks a great deal of the people who live and work beside it. Roads close, pavements move, shop entrances shift, and the schedule changes from one week to the next. Residents need to know what is happening, and they need a dependable way to say when something goes wrong.
 
-**MutiaraInfo**, the community portal for the LRT Mutiara Line, answers both needs. It is a web platform where project teams and government bodies publish construction news, where residents and business owners see what is affected on a map, and where every concern becomes a numbered ticket that can be followed until it is resolved.
+**MutiaraInfo**, the community portal for the LRT Mutiara Line, answers both needs. It is a web platform where project teams and government bodies publish construction news, where residents and business owners see what is affected on a map, and where every complaint becomes a numbered ticket that can be followed until it is resolved.
 
 This repository holds a **front-end simulation** built for the group project of *CMT322 Web Engineering & Technologies* (2026/2027, Semester 1), Universiti Sains Malaysia. It runs entirely in the browser with sample data. No server or database is needed.
 
@@ -22,9 +22,9 @@ This repository holds a **front-end simulation** built for the group project of 
 
 | Stakeholder | What they need from the portal |
 | --- | --- |
-| **Residents** | Clear notices on closures and schedules, and a simple way to raise concerns |
+| **Residents** | Clear notices on closures and schedules, and a simple way to raise complaints |
 | **Business owners** | Information on how customers and deliveries can reach their premises |
-| **Government bodies** | A view of public concerns and a way to review and respond |
+| **Government bodies** | A view of public complaints and a way to review and respond |
 | **Construction teams** | A channel to post updates and act on assigned tickets |
 
 ## Screenshots
@@ -37,7 +37,7 @@ This repository holds a **front-end simulation** built for the group project of 
 <td width="50%"><img src="docs/screenshots/2-map.png" alt="Map page"><br><sub><b>Disruption map.</b> A route map with stations, a legend with layers, zoom and pan, and marker details.</sub></td>
 </tr>
 <tr>
-<td width="50%"><img src="docs/screenshots/3-report.png" alt="Report page"><br><sub><b>Report a concern.</b> A short form that returns a ticket number.</sub></td>
+<td width="50%"><img src="docs/screenshots/3-report.png" alt="Report page"><br><sub><b>Report a complaint.</b> A short form that returns a ticket number.</sub></td>
 <td width="50%"><img src="docs/screenshots/4-track.png" alt="Track page"><br><sub><b>Feedback and ticket tracking.</b> Status steps and history.</sub></td>
 </tr>
 <tr>
@@ -52,7 +52,7 @@ This repository holds a **front-end simulation** built for the group project of 
 | **1. Construction Information Hub** | Share timely and reliable news | Posting updates, status labels, filters by zone, category and status, zone alerts |
 | **2. Interactive Construction & Disruption Map** | Show what is affected, and where | Route map with stations, legend layers, zoom and pan, date slider, search, marker details, report from the map |
 | **3. Community Feedback & Complaint** | Give residents a voice | Category form, photo check, ticket number, ticket tracking |
-| **4. Admin & Feedback Tracking** | Turn concerns into action | Priority, assignment and status control, operational dashboard |
+| **4. Admin & Feedback Tracking** | Turn complaints into action | Priority, assignment and status control, operational dashboard |
 
 ## How the modules connect
 
@@ -69,14 +69,14 @@ flowchart LR
 
 ## A ticket's journey
 
-A resident reports a concern and receives a ticket number. Staff then move the ticket through four stages, and the resident can check the current stage at any time.
+A resident reports a complaint and receives a ticket number. Staff then move the ticket through four stages, and the resident can check the current stage at any time.
 
 ```mermaid
 sequenceDiagram
     actor R as Resident
     participant P as Portal
     actor S as Staff
-    R->>P: Submit concern (category, description, photo)
+    R->>P: Submit complaint (category, description, photo)
     P-->>R: Ticket number, e.g. LRT-2026-0003
     P->>S: Ticket appears on dashboard
     S->>P: Set priority and assignee
@@ -164,7 +164,7 @@ Then open the address it prints, usually `http://localhost:5173`. The page reloa
 │   └── modules/            one folder per module, each with api.js (database calls) and routes.jsx (pages)
 │       ├── advisories/     Module 1: home, advisories, advisory detail, schedule, Manage advisories, urgent banner
 │       ├── map/            Module 2: disruption map
-│       ├── complaints/     Module 3: report a concern, ticket tracking
+│       ├── complaints/     Module 3: report a complaint, ticket tracking
 │       └── admin/          Module 4: sign-in and staff dashboard
 ├── public/assets/img/      photos used by the site and the sample advisories
 ├── supabase/               database schema and sample data

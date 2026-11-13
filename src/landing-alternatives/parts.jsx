@@ -157,7 +157,7 @@ export function FeatureCards({ hub, bare = false }) {
     { to: '/advisories', icon: 'list', title: 'Construction Updates', text: 'Closures, schedules and business access notices from the project teams.',
       badge: s ? `${s.active} ongoing` : failed ? 'Live list' : 'Loading…', tint: 'var(--lp-tint-sky)', tone: 'var(--lp-sky)', go: 'Browse updates' },
     { to: '/report', icon: 'report', title: 'Report an Issue', text: 'Noise, dust, damage or blocked access? Send it in and get a ticket number.',
-      badge: '6 issue types', tint: 'var(--lp-tint-peach)', tone: '#B45309', go: 'Report a concern' },
+      badge: '6 issue types', tint: 'var(--lp-tint-peach)', tone: '#B45309', go: 'Report a complaint' },
     { to: '/track', icon: 'Progress', title: 'Track Your Ticket', text: 'Enter your ticket number to see its status and full history.',
       badge: '4 status steps', tint: 'var(--lp-tint-teal)', tone: 'var(--lp-teal)', go: 'Check a ticket' },
   ];

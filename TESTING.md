@@ -21,7 +21,7 @@ After `npm run test:e2e`, open `playwright-report/index.html` for the full resul
 | `util.test.js`, `supabase-helpers.test.js`, `links.test.js` | Shared helpers: dates, photo checks, search clean-up, page addresses |
 | `advisories-api.test.js` | Module 1 queries: filters, archive and expiry, home numbers, schedule, zone alerts, staff saves |
 | `advisories-pages.test.jsx` | Home, Advisories filters, advisory cards, zone alerts, urgent banner |
-| `complaints.test.jsx` | Module 3: Report a concern and ticket tracking |
+| `complaints.test.jsx` | Module 3: Report a complaint and ticket tracking |
 | `staff-pages.test.jsx` | Manage advisories list and the advisory form pages |
 | `admin-api.test.js`, `tickets-logic.test.js` | Module 4 ticket queries, search and filters, counts, assignee choices |
 | `admin-tickets.test.jsx` | Module 4 dashboard (list, filters, quick changes) and ticket page |
